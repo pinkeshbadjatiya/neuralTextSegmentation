@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block body %}
+<header class="section" id="hero">
+   <div class="wrapper">
+      <h1>TopicSegmentation</h1>
+      <h3 class="subheading muted">Demo for the topic segmentation algorithm</h3>
+   </div>
+</header>
+<div class="section bg-orange">
+   <div class="wrapper document-class">
+      <form id="doc-form" action="{{ url_for('upload')}}" method="POST">
+          <a class="btn" href="{{ url_for('main')}}" type="white" outline>
+            <b><span>Home<span></b>
+          </a>
+          <a class="btn" onclick="document.getElementById('doc-form').submit();" type="white" outline>
+            <b><span>Upload</span></b>
+          </a>
+          <h1>Enter the text:</h1>
+          <!-- <input class="btn"  type="submit" name="myform" value="Send"> -->
+          <textarea name="document" rows="20">{{sample_doc}}</textarea>
+          <!-- <input type="textarea" name="text"> -->
+      </form>
+   </div>
+</div>
+{% endblock %}

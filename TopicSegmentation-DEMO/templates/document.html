@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block body %}
+<header class="section" id="hero">
+   <div class="wrapper">
+      <h1>TopicSegmentation</h1>
+      <h3 class="subheading muted">Demo for the topic segmentation algorithm</h3>
+   </div>
+</header>
+<div class="section bg-orange" onload="remove_segments();">
+   <div class="wrapper document-class">
+      <p>To find the topic segments click on the '<em><b>Find TopicSegments</b></em>' button below.</p>
+      <p>
+        <a class="btn" href="{{ url_for('main')}}" type="white" outline>
+          <b><span>Home<span></b>
+        </a>
+        <a class="btn" id="RemoveBUTTON" onclick="remove_segments();" type="white" outline>
+          <b><span>Remove TopicSegments</span></b>
+        </a>
+        <a class="btn" id="FindBUTTON" onclick="find_segments();" type="white" outline>
+          <b><span>Find TopicSegments</span></b>
+        </a>
+        <a class="btn" href="{{ url_for('upload')}}" type="black">
+          <b><span>Upload Document</span></b>
+        </a>
+      </p>
+      <div id="doc">
+        {% if segments %}
+            {{segmented_document|safe}}
+        {% else %}
+            {{original_document|safe}}
+        {% endif %}
+      </div>
+  </div>
+</div>
+<style>
+.segment:nth-child(odd) {
+    background-color: rgba(0, 0, 0, 0.06);
+    border-radius: 10px;
+}
+.segment {
+    padding: 10px;
+    padding-bottom:20px;
+}
+</style>
+<script>
+
+{% if segments %}
+var segments = true;
+{% else %}
+var segments = false;
+{% endif %}
+
+var original_text = `{{original_document|safe}}`;
+var segmented_text = `{{segmented_document|safe}}`;
+
+
+
+function remove_segments() {
+  if (segments == false) {
+    alert("No segments found!");
+  } else if (original_text.length <= 0) {
+    alert("Original Document not found!");
+  } else {
+    segmented_text = document.getElementById("doc").innerHTML;
+    document.getElementById("doc").innerHTML = original_text;
+    segments = false;
+    toggle_button_visibility();
+    alert("SUCCESS! Segments removed");
+  }
+}
+
+function find_segments() {
+  if (segments == true) {
+    alert("Already segmented!");
+  } else if (segmented_text.length <= 0) {
+    window.location.href = "{{ url_for('segments', document=original_document) }}";
+  } else {
+    original_text = document.getElementById("doc").innerHTML;
+    document.getElementById("doc").innerHTML = segmented_text;
+    segments = true;
+    toggle_button_visibility();
+    alert("SUCCESS! Segments found");
+  }
+}
+
+function toggle_button_visibility() {
+    $("#RemoveBUTTON").toggle();
+    $("#FindBUTTON").toggle();
+}
+
+{% if segments %}
+alert("Segments found!");
+$("#FindBUTTON").hide();
+{% else %}
+$("#RemoveBUTTON").hide();
+{% endif %}
+
+
+</script>
+{% endblock %}

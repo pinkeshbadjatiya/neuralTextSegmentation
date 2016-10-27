@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <title>TopicSegmentation</title>
+      <meta charset="utf-8">
+      <meta http-equiv="x-ua-compatible" content="ie=edge">
+      <link rel="icon" type="image/png" href="favicon.png">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, user-scalable=yes">
+      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.min.css') }}">
+      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='mystyle.css') }}">
+
+
+      <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='bootstrap.min.css') }}">
+      <script src="{{ url_for('static', filename='jquery-latest.min.js') }}"></script>
+      <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+      <script src="{{ url_for('static', filename='jquery.mark.min.js') }}"></script> -->
+
+      <script src="{{ url_for('static', filename='jquery-latest.min.js') }}"></script>
+      <script async src="{{ url_for('static', filename='prettify.js') }}"></script>
+   </head>
+   {% for message in get_flashed_messages() %}
+     <div class=flash>{{ message }}</div>
+   {% endfor %}
+   {% block body %}
+   {% endblock %}
+</html>
