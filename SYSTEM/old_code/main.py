@@ -1,6 +1,6 @@
 #########################
 # Theano for Training a
-# Neural Network on MNIST
+# Neural Network
 #########################
 
 import numpy as np
@@ -43,10 +43,6 @@ W2 = layer(HIDDEN_UNITS, OUTPUT_UNITS)
 b2 = layer(OUTPUT_UNITS, bias=True)
 
 
-#w = theano.shared(np.random.normal(loc=0, scale=.1, size=(INPUT_DIM, HIDDEN_UNITS)))
-#b = theano.shared(np.zeros(HIDDEN_UNITS))
-#v = theano.shared(np.zeros((HIDDEN_UNITS, OUTPUT_UNITS)))
-#c = theano.shared(np.zeros(OUTPUT_UNITS))
 
 # symbolic expression-building
 out = tensor.tanh(tensor.dot(tensor.tanh(tensor.dot(sx, W1) + b1), W2) + b2)
@@ -71,11 +67,8 @@ def predict(input_x):
 if __name__ == "__main__":
     # now do the computations
     errors = []
-    epocs = 10000
+    epocs = 1000
     for i in xrange(epocs):
-        #print x[i, i * batchsize: (i + 1) * batchsize].shape
-        #x_i = x[i, i * batchsize: (i + 1) * batchsize].reshape((batchsize, 1))
-        #y_i = y[i].reshape((1,1))
         err_i = train(x, y)
         errors.append(err_i)        
         print err_i

@@ -19,8 +19,8 @@ def plot(X, Y, axis_prefix="Axis"):
                 color=COLORS[0],
                 alpha=0.5,
                 )
-    plt.xlabel(axis_prefix + '1')
-    plt.ylabel(axis_prefix + '2')
+    plt.xlabel(axis_prefix + 'Iteration')
+    plt.ylabel(axis_prefix + 'Error')
                       
     #leg = plt.legend(loc='upper right', fancybox=True)
     #leg.get_frame().set_alpha(0.5)
