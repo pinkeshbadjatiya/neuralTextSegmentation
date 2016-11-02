@@ -9,9 +9,11 @@ import theano
 import theano.tensor as tensor
 from plot import plot
 
+import pdb
+
 rng = np.random.RandomState(1234)
 
-HIDDEN_UNITS = 3
+HIDDEN_UNITS = 2
 OUTPUT_UNITS = 1
 
 x = np.asarray([[0, 0],
@@ -60,6 +62,12 @@ train = theano.function([sx, sy], err,
         (W2, W2 - lr * gW2),
         (b2, b2 - lr * gb2)])
 
+
+def predict(input_x):
+    out = tensor.tanh(tensor.dot(tensor.tanh(tensor.dot(input_x, W1) + b1), W2) + b2)
+    print out
+    return out
+
 if __name__ == "__main__":
     # now do the computations
     errors = []
@@ -71,4 +79,6 @@ if __name__ == "__main__":
         err_i = train(x, y)
         errors.append(err_i)        
         print err_i
-    plot(errors, range(1, epocs+1))
+    pdb.set_trace()
+    predict([[0, 0]])
+    plot(range(1, epocs+1), errors)
