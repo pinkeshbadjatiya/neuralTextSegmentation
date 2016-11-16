@@ -1,10 +1,15 @@
 import re
+import pdb
 import nltk.data
+import os
 
 REGEX_heading = re.compile(r'<(h[0-9])>(.*)\.</\1>')      # <h2>heading.</h>
 REGEX_document_start = re.compile(r'<doc *(id="([0-9]{1,})")? *(url=".*")? *(title=".*")?>')
 REGEX_document_end = re.compile(r'</doc>')
 
+WIKI_DOCS = "/home/pinkesh/DATASETS/WIKIPEDIA_DATASET/extracted_WIKIPEDIA/"
+if WIKI_DOCS[-1]!="/":
+    raise Exception("Check the directory name")
 
 # Skip that condition if the value is -1
 MIN_SENTENCES_IN_DOCUMENT = -1
@@ -23,7 +28,7 @@ def create_structured_document(file_name):
     with open(file_name) as f:
         data = f.readlines()
 
-    sections = []   # sections = [paragraph in paragraphs], where paragraph = [line in lines]
+    sections = []   # sections = [paragraph in paragraphs], where paragraph = [line in lines] after tokenizing using a tokenizer
     docID = None
     start_line = None
     paragraph = []
@@ -60,13 +65,25 @@ def create_structured_document(file_name):
             paragraph.append(line)
 
 
-required_samples = []
+required_samples = []           # Samples which are actually split segments
+required_samples_NEG = []       # Samples which are not split segments
 best_docs = []
-queue = []
+queue = []          # Handles the tokenised sentence in a paragraph
 
 
 def process_sample(invalid_paragraph_encountered=False):
     global queue
+    if not len(queue):
+        return
+
+    # For NEGATIVE samples
+    # SPLIT it into 2 if twice the length of the paragraph 
+    if len(queue[-1]) >= 2*MIN_SENTENCES_IN_PARAGRAPH:
+        print "########## Found a NEGATIVE split point with len: %d" %(len(queue[-1]))
+        leng = len(queue[-1])
+        required_samples_NEG.append([queue[-1][:leng/2], queue[-1][leng/2:]])
+
+    # For POSITIVE samples
     if len(queue) >= REQUIRED_CONSECUTIVE_PARAGRAPH:
         required_samples.append(queue)
         queue = queue[1:]
@@ -112,9 +129,16 @@ def get_best_documentIDs():
         for section in sections:
             for paragraph in section:
                 # Length of paragraph is wrong as the sentences are merges and need to be split using nltk sentence tokeniser
-                if len(sentence_tokenizer.tokenize(paragraph)) < MIN_SENTENCES_IN_PARAGRAPH:
+                paragraph = sentence_tokenizer.tokenize(paragraph)
+                le = len(paragraph)
+                if le < MIN_SENTENCES_IN_PARAGRAPH:
                     process_sample(invalid_paragraph_encountered=True)
                     continue
+
+                # Make the sentences in the paragraph equal to MIN_SENTENCES_IN_PARAGRAPH
+                #remove = le - MIN_SENTENCES_IN_PARAGRAPH
+                #if remove:
+                #    paragraph = paragraph[remove/2:-remove+remove/2]
                 queue.append(paragraph)
                 process_sample(invalid_paragraph_encountered=False)
 
@@ -122,8 +146,21 @@ def get_best_documentIDs():
 
     return best_docs
 
-if __name__ == "__main__":
-    create_structured_document("./AAs/AA_wiki_01")
+def get_samples():
+    PROCESS_MAX_FILES = 600
+    files_processed = 0
+    for fil in os.listdir(WIKI_DOCS):
+        create_structured_document(WIKI_DOCS + fil)
+        files_processed += 1
+        if files_processed > PROCESS_MAX_FILES:
+            print ">>>> Breaking the process loop. Processed %d files" %(files_processed)
+            break
+    #create_structured_document("./AAs/AA_wiki_01")
     best_docs = get_best_documentIDs()
     print "Total best documents:", len(best_docs)
+    return required_samples, required_samples_NEG
+
+
+if __name__ == "__main__":
+    get_samples()
     import pdb; pdb.set_trace()
