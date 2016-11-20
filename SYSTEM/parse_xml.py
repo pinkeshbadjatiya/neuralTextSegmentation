@@ -147,7 +147,9 @@ def get_best_documentIDs():
     return best_docs
 
 def get_samples():
-    PROCESS_MAX_FILES = 600
+    #PROCESS_MAX_FILES = 600
+    PROCESS_MAX_FILES = 100
+    #PROCESS_MAX_FILES = 50
     files_processed = 0
     for fil in os.listdir(WIKI_DOCS):
         create_structured_document(WIKI_DOCS + fil)

@@ -3,6 +3,7 @@ from keras.layers import Dense
 import numpy
 import pdb
 from data_handler import get_input
+from scoring import *
 
 # fix random seed for reproducibility
 seed = 7
@@ -12,7 +13,7 @@ numpy.random.seed(seed)
 
 def run_neural_net(X_train, Y_train, X_test, Y_test):
     # Rows are samples, columns are features
-
+    
     # create model
     model = Sequential()
     model.add(Dense(32, input_dim=X_train.shape[1], init='uniform', activation='relu'))
@@ -28,7 +29,7 @@ def run_neural_net(X_train, Y_train, X_test, Y_test):
     #])
     
     # Compile model
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', recall, precision])
     
     # Fit the model
     model.fit(X_train, Y_train, nb_epoch=10, batch_size=10)
