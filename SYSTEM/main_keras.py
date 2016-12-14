@@ -14,11 +14,14 @@ numpy.random.seed(seed)
 def run_neural_net(X_train, Y_train, X_test, Y_test):
     # Rows are samples, columns are features
     
+    INTPUT_NODES = X_train.shape[1]
+    OUTPUT_NODES = len(Y_train[0])      # Earlier it was 1
+
     # create model
     model = Sequential()
-    model.add(Dense(32, input_dim=X_train.shape[1], init='uniform', activation='relu'))
+    model.add(Dense(32, input_dim=INPUT_NODES, init='uniform', activation='relu'))
     #model.add(Dense(X.shape[1], init='uniform', activation='relu'))
-    model.add(Dense(1, init='uniform', activation='sigmoid'))
+    model.add(Dense(OUTPUT_NODES, init='uniform', activation='sigmoid'))
     #model = Sequential([
     #    Dense(32, input_dim=X.shape[1], init='uniform'),
     #    Activation('relu'),

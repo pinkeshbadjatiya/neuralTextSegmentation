@@ -8,22 +8,18 @@ from numpy import vstack
 import numpy as np
 import pdb
 
-# This is for each paragraph, or across a split point
-INPUT_VECTOR_LENGTH=100
-
-sentence_tzr = nltk.data.load("tokenizers/punkt/english.pickle")
+# This is the no of lines in each sample
+from parse_xml import INPUT_VECTOR_LENGTH
 
 
-####################################
-### FORMALIZE THIS SECTION
-####################################
+
 def get_input():
     # Returns X, Y
     # X: Each row is a sample
     # Y: A 1-D vector for ground truth
     # Also pads the input as per the mentioned value of INPUT_VECTOR_LENGTH is needed
 
-    samples, samples_NEG = get_samples()
+    samples = get_samples()     # Get samples
     
     #model = TFIDF() 
     model = MeanWord2vec() 
@@ -31,32 +27,14 @@ def get_input():
     X = []
     Y = []
     for sample in samples:
-        # Each sample is a set of consecutive paragraphs, initially it is 2 paragraphs
-        # Virtually, each paragraph is like a document
-        sample = model.convert_sample_to_vec(sample)
-        if sample == None:
+        # Each sample is a list of tuples with each tuple as (sentence, groundTruth)
+        sentences, groundTruths = zip(*sample)        # Unpack a sample
+        sentences = model.convert_sample_to_vec(sentences)
+        if sentences == None:
             continue
-        X.append(sample)
-        # X[0].shape = matrix([[1,2,3,4.....]])
-        Y += [1]
-        # Y[0] = [0, 0, 0, ..... 1, 1, 0, 0....]
-
-
-    X_neg = []
-    Y_neg = []
-    for sample in samples_NEG:
-        # Each sample is a set of consecutive paragraphs, initially it is 2 paragraphs
-        # Virtually, each paragraph is like a document
-        sample = model.convert_sample_to_vec(sample)
-        if sample == None:
-            continue
-        X_neg.append(sample)
-        # X[0].shape = matrix([[1,2,3,4.....]])
-        Y_neg += [0]
-        # Y[0] = [0, 0, 0, ..... 1, 1, 0, 0....]
-
-    return vstack(X + X_neg), Y + Y_neg
-    #return X, Y, X_neg, Y_neg
+        X.append(sentences)            # X[0].shape = matrix([[1,2,3,4.....]])
+        Y.append(groundTruths)          # Y[0] = [1, 0, 0, ..... 0, 1, 0, 1....]
+    return X, Y
     
 
 # # Might fail if the classification is not binary!!!
