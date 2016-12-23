@@ -1,9 +1,10 @@
 import nltk.data
+import pdb
 
 from encode_tfidf import TFIDF
 from encode_mean import MeanWord2vec
 
-from parse_xml import get_samples
+from parse_xml import DataHandler
 from numpy import vstack
 import numpy as np
 import pdb
@@ -19,7 +20,8 @@ def get_input():
     # Y: A 1-D vector for ground truth
     # Also pads the input as per the mentioned value of INPUT_VECTOR_LENGTH is needed
 
-    samples = get_samples()     # Get samples
+    data_handler = DataHandler()
+    samples = data_handler.get_samples()     # Get samples
     
     #model = TFIDF() 
     model = MeanWord2vec() 
@@ -34,7 +36,7 @@ def get_input():
             continue
         X.append(sentences)            # X[0].shape = matrix([[1,2,3,4.....]])
         Y.append(groundTruths)          # Y[0] = [1, 0, 0, ..... 0, 1, 0, 1....]
-    return X, Y
+    return np.asarray(X), np.asarray(Y)
     
 
 # # Might fail if the classification is not binary!!!

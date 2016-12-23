@@ -44,7 +44,7 @@ class MeanWord2vec(object):
             return None
         elif remove < 0:
             # Do not have sentences equal to MIN_SENTENCES_IN_PARAGRAPH
-            print ">>>>>>>>>>>> Found %d sentences instead of %d" %(len(doc_vec), MIN_SENTENCES_IN_PARAGRAPH)
+            print ">>>>>>>>>>>> Found %d sentences instead of %d" %(len(sample_vec), MIN_SENTENCES_IN_PARAGRAPH)
             return None
 
         try:

@@ -1,3 +1,5 @@
+#!/usr/bin/python2
+
 from keras.models import Sequential
 from keras.layers import Dense
 import numpy
@@ -14,7 +16,7 @@ numpy.random.seed(seed)
 def run_neural_net(X_train, Y_train, X_test, Y_test):
     # Rows are samples, columns are features
     
-    INTPUT_NODES = X_train.shape[1]
+    INPUT_NODES = X_train.shape[1]
     OUTPUT_NODES = len(Y_train[0])      # Earlier it was 1
 
     # create model
@@ -67,7 +69,7 @@ def unison_shuffled_copies(a, b):
 if __name__=="__main__":
     #X, Y = sample_data()
     X, Y = get_input()
-    X, Y = unison_shuffled_copies(X, Y)
+    #X, Y = unison_shuffled_copies(X, Y)
 
     # Split test-train data
     train_ratio = 0.8

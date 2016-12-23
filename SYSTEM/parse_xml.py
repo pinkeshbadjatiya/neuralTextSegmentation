@@ -20,7 +20,7 @@ class DataHandler:
         self.REGEX_document_start = re.compile(r'<doc *(id="([0-9]{1,})")? *(url=".*")? *(title=".*")?>')
         self.REGEX_document_end = re.compile(r'</doc>')
 
-        self.WIKI_DOCS = "/home/pinkesh/DATASETS/WIKIPEDIA_DATASET/extracted_WIKIPEDIA/"
+        self.WIKI_DOCS = "/home/grim/DATASETS/WIKIPEDIA_DATASET/extracted_WIKIPEDIA/"
         if self.WIKI_DOCS[-1]!="/":
             raise Exception("Check the directory name")
 
@@ -77,7 +77,7 @@ class DataHandler:
                 sections.append(paragraph)
                 paragraph = []
             else:
-                paragraph.append(self.sentence_tokenizer(line))
+                paragraph.append(self.sentence_tokenizer.tokenize(line))
 
 
     
@@ -126,8 +126,8 @@ class DataHandler:
 
     def get_samples(self):
         #PROCESS_MAX_FILES = 600
-        PROCESS_MAX_FILES = 100
-        #PROCESS_MAX_FILES = 50
+        #PROCESS_MAX_FILES = 100
+        PROCESS_MAX_FILES = 15
         files_processed = 0
         for fil in os.listdir(self.WIKI_DOCS):
             self._create_structured_document(self.WIKI_DOCS + fil)
@@ -148,7 +148,7 @@ class SampleCreator:
         self.samples = []
         #self.REQUIRED_CONSECUTIVE_PARAGRAPH = 2  # For the sample, each sample is (1 paragraph, split-end, 1 paragraph)
 
-    def create_samples(self, documents):
+    def create_samples(self, document):
         print "Creating Samples...."
         for (docID, sections) in document:
             # Iterate over section
