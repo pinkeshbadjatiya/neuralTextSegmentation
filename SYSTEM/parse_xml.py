@@ -42,18 +42,18 @@ class DataHandler:
     def _create_structured_document(self, file_name):
         with open(file_name) as f:
             data = f.readlines()
-    
+
         sections = []   # sections = [paragraph in paragraphs], where paragraph = [line in lines] after tokenizing using a tokenizer
         docID = None
         start_line = None
         paragraph = []
         for i, line in enumerate(data):
             line = line.decode("UTF-8")
-    
+
             # Skip the blank lines or which have only one character.
             if len(line.strip()) < 1:
                 continue
-    
+
             lno = i + 1
             _doc_start, _doc_end, _heading = self.REGEX_document_start.match(line), self.REGEX_document_end.match(line), self.REGEX_heading.match(line)
             if _doc_start:
@@ -68,54 +68,54 @@ class DataHandler:
             elif not start_line and lno == start_line + 1:   # Doc title
                 document_id_to_title[docID] = line
             elif _heading:
-    
+
                 # Do this only for the top sections as we are using the paragraphs
                 # to learn split points
                 if len(paragraph) == 0:
                     continue
-    
+
                 sections.append(paragraph)
                 paragraph = []
             else:
                 paragraph.append(self.sentence_tokenizer.tokenize(line))
 
 
-    
+
     def filter_docs(self):
         best_docs = []
         for (docID, sections) in self.documents:
             # Remove the 1st section as it might be very complex in structure
             sections = sections[1:]
-    
+
             # Remove documents with less than 2 sections
             if MIN_SECTIONS != -1:
                 if len(sections) <= MIN_SECTIONS:
                     print docID, ": Fails at MIN_SECTIONS (", len(sections), "/", MIN_SECTIONS, ")"
                     continue
-    
+
             sentence_counts = [[len(par) for par in section] for section in sections]
-    
+
             # Remove documents that have less than MIN_SENTENCES_IN_DOCUMENT.
             if MIN_SENTENCES_IN_DOCUMENT != -1:
                 count = sum([sum(section) for section in sentence_counts])
                 if count < MIN_SENTENCES_IN_DOCUMENT:
                     print docID, ": Fails at MIN_SENTENCES_IN_DOCUMENT (", count, "/", MIN_SENTENCES_IN_DOCUMENT,")"
                     continue
-    
+
             # Remove documents that have less than MIN_SENTENCES_IN_SECTION
             if MIN_SENTENCES_IN_SECTION != -1:
                 count = min([sum(section) for section in sentence_counts])
                 if count < MIN_SENTENCES_IN_SECTION:
                     print docID, ": Fails at MIN_SENTENCES_IN_SECTION (", count,"/", MIN_SENTENCES_IN_SECTION,")"
                     continue
-                    
+
             if MIN_SENTENCES_IN_PARAGRAPH != -1:
                 count = min([min(section) for section in sentence_counts])
                 if count < MIN_SENTENCES_IN_PARAGRAPH:
                     print docID, ": Fails at MIN_SENTENCES_IN_PARAGRAPH (", count, "/", MIN_SENTENCES_IN_PARAGRAPH,")"
                     continue
-                
-    
+
+
             best_docs.append(docID)
 
         # Skip the bad documents
@@ -127,7 +127,7 @@ class DataHandler:
     def get_samples(self):
         #PROCESS_MAX_FILES = 600
         #PROCESS_MAX_FILES = 100
-        PROCESS_MAX_FILES = 15
+        PROCESS_MAX_FILES = 8
         files_processed = 0
         for fil in os.listdir(self.WIKI_DOCS):
             self._create_structured_document(self.WIKI_DOCS + fil)
@@ -157,13 +157,13 @@ class SampleCreator:
                     self.queue += [((sentence, int(not count))) for count, sentence in enumerate(paragraph)]    # GroundTruth is 1 for the splitting sentence else 0
         self._process_queue()
         return self.samples
-    
+
 
     def _process_queue(self):
         """ Unpack and create individual samples from the common long queue """
         if not len(self.queue):
             return
-        
+
         for i in range(len(self.queue)):
             temp = self.queue[i: i+INPUT_VECTOR_LENGTH]
             if len(temp) != INPUT_VECTOR_LENGTH:

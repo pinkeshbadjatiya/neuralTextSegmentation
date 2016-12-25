@@ -11,11 +11,23 @@ from scoring import *
 seed = 7
 numpy.random.seed(seed)
 
+WINDOW_SIZE_winddiff_metric = 15
 
+def window_diff_metric(y_true, y_pred):
+    yT = T.concatenate([np.array([0]), T.extra_ops.cumsum(y_true, axis=0)])
+    yP = T.concatenate([np.array([0]), T.extra_ops.cumsum(y_pred, axis=0)])
+
+    winT = (yT - T.roll(yT, WINDOW_SIZE_winddiff_metric))[WINDOW_SIZE_winddiff_metric:]
+    winP = (yP - T.roll(yP, WINDOW_SIZE_winddiff_metric))[WINDOW_SIZE_winddiff_metric:]
+
+    result = T.mean(T.eq(winT - winP, 0))
+    return {
+        'WinDiff': result,
+    }
 
 def run_neural_net(X_train, Y_train, X_test, Y_test):
     # Rows are samples, columns are features
-    
+
     INPUT_NODES = X_train.shape[1]
     OUTPUT_NODES = len(Y_train[0])      # Earlier it was 1
 
@@ -32,21 +44,19 @@ def run_neural_net(X_train, Y_train, X_test, Y_test):
     #    Dense(1, init='uniform'),
     #    Activation('sigmoid'),
     #])
-    
+
     # Compile model
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', recall, precision])
-    
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', recall, precision, window_diff_metric])
+
     # Fit the model
     model.fit(X_train, Y_train, nb_epoch=10, batch_size=10)
-    
+
     # evaluate the model
     scores = model.evaluate(X_test, Y_test)
     print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
 
-    # calculate predictions
-    predictions = model.predict(X_test)
-    # round predictions
-    #rounded = [round(x) for x in predictions]
+    predictions = model.predict(X_test)         # calculate predictions
+    #rounded = [round(x) for x in predictions]  # round predictions
     print(predictions)
     pdb.set_trace()
 
@@ -58,25 +68,17 @@ def sample_data():
     X = dataset[:,0:8]
     Y = dataset[:,8]
     return X, Y
-        
-
-def unison_shuffled_copies(a, b):
-    assert len(a) == len(b)
-    p = numpy.random.permutation(len(a))
-    return a[p], numpy.asarray(b)[p]
 
 
 if __name__=="__main__":
     #X, Y = sample_data()
-    X, Y = get_input()
-    #X, Y = unison_shuffled_copies(X, Y)
+    X, Y = get_input(shuffle=False)
 
     # Split test-train data
     train_ratio = 0.8
     print 'X(train)=', X.shape[0]*train_ratio
     print 'X(test)=', X.shape[0]*(1-train_ratio)
     train_samples = int(train_ratio * X.shape[0])
-    
+
     #pdb.set_trace()
     run_neural_net(X[:train_samples,:], Y[:train_samples], X[train_samples:,:], Y[train_samples:])
-
