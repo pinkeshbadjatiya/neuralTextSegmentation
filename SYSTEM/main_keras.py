@@ -2,27 +2,37 @@
 
 from keras.models import Sequential
 from keras.layers import Dense
-import numpy
+import numpy as np
 import pdb
 from data_handler import get_input
 from scoring import *
+import theano
+import theano.tensor as T
+#import tensorflow as tf
+
 
 # fix random seed for reproducibility
 seed = 7
-numpy.random.seed(seed)
+np.random.seed(seed)
 
 WINDOW_SIZE_winddiff_metric = 15
 
 def window_diff_metric(y_true, y_pred):
-    yT = T.concatenate([np.array([0]), T.extra_ops.cumsum(y_true, axis=0)])
-    yP = T.concatenate([np.array([0]), T.extra_ops.cumsum(y_pred, axis=0)])
+    _padding_var = T.set_subtensor(y_true[0], 0)
+
+    yT = T.concatenate((_padding_var, T.extra_ops.cumsum(y_true, axis=0)))
+    yP = T.concatenate((_padding_var, T.extra_ops.cumsum(y_pred, axis=0)))
 
     winT = (yT - T.roll(yT, WINDOW_SIZE_winddiff_metric))[WINDOW_SIZE_winddiff_metric:]
     winP = (yP - T.roll(yP, WINDOW_SIZE_winddiff_metric))[WINDOW_SIZE_winddiff_metric:]
 
-    result = T.mean(T.eq(winT - winP, 0))
+    result = T.sum(T.eq(winT - winP, 0))
+    return result
+
+def size(y1, y2):
+    print y1[0]
     return {
-        'WinDiff': result,
+        'shape': y2.shape[1],
     }
 
 def run_neural_net(X_train, Y_train, X_test, Y_test):
@@ -46,19 +56,23 @@ def run_neural_net(X_train, Y_train, X_test, Y_test):
     #])
 
     # Compile model
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', recall, precision, window_diff_metric])
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', recall, precision, window_diff_metric, size])
+    #model.compile(loss='mean_squared_error', optimizer='sgd', metrics=['accuracy', recall, precision, window_diff_metric, size])
 
     # Fit the model
-    model.fit(X_train, Y_train, nb_epoch=10, batch_size=10)
+    model.fit(X_train, Y_train, nb_epoch=100, batch_size=100)
 
     # evaluate the model
+    print 'Evaluating...\n'
     scores = model.evaluate(X_test, Y_test)
-    print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
+    print Y_test.shape 
+    for (name, score) in zip(model.metrics_names, scores):
+        print " %s: %.2f%%" % (name, score)
 
     predictions = model.predict(X_test)         # calculate predictions
     #rounded = [round(x) for x in predictions]  # round predictions
-    print(predictions)
-    pdb.set_trace()
+    #print(predictions)
+    #pdb.set_trace()
 
 
 def sample_data():

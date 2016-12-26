@@ -60,7 +60,7 @@ class DataHandler:
                 if len(paragraph) > 0 or len(sections) > 0 or (docID is not None) or (start_line is not None):
                     print "SERIOUS PROBLEM !!"
                 paragraph, sections, docID, start_line = [], [], _doc_start.group(2), lno
-                print "docID: %s" % (docID)
+                #print "docID: %s" % (docID)
             elif _doc_end:
                 # Flush old data & reset
                 self.documents.append((docID, sections))
@@ -90,7 +90,7 @@ class DataHandler:
             # Remove documents with less than 2 sections
             if MIN_SECTIONS != -1:
                 if len(sections) <= MIN_SECTIONS:
-                    print docID, ": Fails at MIN_SECTIONS (", len(sections), "/", MIN_SECTIONS, ")"
+                    #print docID, ": Fails at MIN_SECTIONS (", len(sections), "/", MIN_SECTIONS, ")"
                     continue
 
             sentence_counts = [[len(par) for par in section] for section in sections]
@@ -99,20 +99,20 @@ class DataHandler:
             if MIN_SENTENCES_IN_DOCUMENT != -1:
                 count = sum([sum(section) for section in sentence_counts])
                 if count < MIN_SENTENCES_IN_DOCUMENT:
-                    print docID, ": Fails at MIN_SENTENCES_IN_DOCUMENT (", count, "/", MIN_SENTENCES_IN_DOCUMENT,")"
+                    #print docID, ": Fails at MIN_SENTENCES_IN_DOCUMENT (", count, "/", MIN_SENTENCES_IN_DOCUMENT,")"
                     continue
 
             # Remove documents that have less than MIN_SENTENCES_IN_SECTION
             if MIN_SENTENCES_IN_SECTION != -1:
                 count = min([sum(section) for section in sentence_counts])
                 if count < MIN_SENTENCES_IN_SECTION:
-                    print docID, ": Fails at MIN_SENTENCES_IN_SECTION (", count,"/", MIN_SENTENCES_IN_SECTION,")"
+                    #print docID, ": Fails at MIN_SENTENCES_IN_SECTION (", count,"/", MIN_SENTENCES_IN_SECTION,")"
                     continue
 
             if MIN_SENTENCES_IN_PARAGRAPH != -1:
                 count = min([min(section) for section in sentence_counts])
                 if count < MIN_SENTENCES_IN_PARAGRAPH:
-                    print docID, ": Fails at MIN_SENTENCES_IN_PARAGRAPH (", count, "/", MIN_SENTENCES_IN_PARAGRAPH,")"
+                    #print docID, ": Fails at MIN_SENTENCES_IN_PARAGRAPH (", count, "/", MIN_SENTENCES_IN_PARAGRAPH,")"
                     continue
 
 
@@ -125,9 +125,9 @@ class DataHandler:
 
 
     def get_samples(self):
-        #PROCESS_MAX_FILES = 600
+        PROCESS_MAX_FILES = 600
         #PROCESS_MAX_FILES = 100
-        PROCESS_MAX_FILES = 8
+        #PROCESS_MAX_FILES = 10
         files_processed = 0
         for fil in os.listdir(self.WIKI_DOCS):
             self._create_structured_document(self.WIKI_DOCS + fil)
