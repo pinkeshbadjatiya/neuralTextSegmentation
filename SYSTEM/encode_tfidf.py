@@ -92,7 +92,7 @@ class TFIDF(object):
         # Convert a whole sample into a vectorized sample directly to be fed to the classifier
         sample_vec = []
         for i, doc in enumerate(sample):
-            assert(type(doc), type([])) # "doc" should be a list of sentences
+            #assert(type(doc), type([])) # "doc" should be a list of sentences
             doc = " ".join(doc)         # Doc is a list of sentences
     
             tfidf_mat = self.tfidf_transformer.fit_transform(self.count_transformer.fit_transform([doc]))

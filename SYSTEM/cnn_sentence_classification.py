@@ -20,12 +20,11 @@ def run_neural_net(X_train, Y_train, X_test, Y_test):
     # Rows are samples, columns are features
 
     INPUT_NODES = X_train.shape[1]
-    OUTPUT_NODES = len(Y_train[0])      # Earlier it was 1
-    print "X:", X.shape
+    OUTPUT_NODES = 1
 
     # create model
     model = Sequential()
-    model.add(Dense(32, input_dim=INPUT_NODES, init='uniform', activation='relu'))
+    model.add(Dense(512, input_dim=INPUT_NODES, init='uniform', activation='relu'))
     model.add(Dropout(0.8))
     #model.add(Dense(X.shape[1], init='uniform', activation='relu'))
     model.add(Dense(OUTPUT_NODES, init='uniform', activation='sigmoid'))
@@ -43,7 +42,7 @@ def run_neural_net(X_train, Y_train, X_test, Y_test):
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy', recall, precision])
 
     # Fit the model
-    model.fit(X_train, Y_train, nb_epoch=100, batch_size=10)
+    model.fit(X_train, Y_train, nb_epoch=200, batch_size=100, validation_data=(X_test, Y_test))
 
     # evaluate the model
     print 'Evaluating...\n'
@@ -54,7 +53,8 @@ def run_neural_net(X_train, Y_train, X_test, Y_test):
 
     predictions = model.predict(X_test)         # calculate predictions
     rounded = np.round(predictions)
-    print helper.windiff_metric_NUMPY(Y_test, rounded)
+    rounded = np.expand_dims(rounded, axis=0)
+    print helper.windiff_metric_NUMPY(np.expand_dims(Y_test, axis=0), rounded)
     pdb.set_trace()
     #rounded = [round(x) for x in predictions]  # round predictions
     #print(predictions)
@@ -71,7 +71,11 @@ def sample_data():
 
 if __name__=="__main__":
     #X, Y = sample_data()
-    SAMPLE_TYPE, X, Y = get_input(shuffle=False)
+    SAMPLE_TYPE, X, Y = get_input(sample_type=3, shuffle_documents=False, pad=False)
+    
+    # Flatten all the data so the we do not consider document information, just a simple sentence classificaiton
+    X, Y = np.vstack(X), np.vstack(Y)
+    print "Flattened - X:",X.shape,", Y:",Y.shape
 
     # Split test-train data
     train_ratio = 0.8

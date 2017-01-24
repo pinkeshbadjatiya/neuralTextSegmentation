@@ -6,6 +6,7 @@ import numpy as np
 import string
 
 from parse_xml import MIN_SENTENCES_IN_PARAGRAPH, INPUT_VECTOR_LENGTH
+import codecs
 
 
 def isINT(w):
@@ -22,12 +23,35 @@ class MeanWord2vec(object):
         self.stopwords = set(s_words.words('english') + [w for w in string.punctuation])
         self.vectorize = lambda x: self.model[x]
 
-    def convert_sample_to_vec(self, sample):
-        sample_vec = []
+    def convert_sequence_sample_to_vec(self, sample, groundTruths):
+        """ For type2 samples
+        """
+        # g_ths: Groundtruths
+        sample_vec, g_ths = [], []
+        for i, sentence in enumerate(sample):
+            vec = []
+            for w in word_tokenize(codecs.decode(sentence, "utf-8")):
+                if (w not in self.stopwords) and (not isINT(w)):
+                    try:
+                        vec.append(self.model[w])
+                    except KeyError:
+                        # Skip all the words whose vector representation is not present in the word2vec pre-trained model
+                        continue
+            if len(vec) > 0:
+                sample_vec.append(np.mean(vec, axis=0))
+                g_ths.append(groundTruths[i])
 
+        # Check vstack() or hstack()
+        return np.vstack(sample_vec), np.asarray(g_ths).reshape((len(g_ths), 1))
+
+
+    def convert_sample_to_vec(self, sample):
+        """ For type1 samples
+        """
+        sample_vec = []
         for sentence in sample:
             vec = []
-            for w in word_tokenize(sentence):
+            for w in word_tokenize(codecs.decode(sentence, "utf-8")):
                 if (w not in self.stopwords) and (not isINT(w)):
                     try:
                         vec.append(self.model[w])
@@ -37,20 +61,25 @@ class MeanWord2vec(object):
             if len(vec) > 0:
                 sample_vec.append(np.mean(vec, axis=0))
 
-        # Make the sentences in the paragraph equal to MIN_SENTENCES_IN_PARAGRAPH
+        # Make the sentences in the sample equal to INPUT_VECTOR_LENGTH
         remove = len(sample_vec) - INPUT_VECTOR_LENGTH
         if remove > 0:
-            print "Vectorized sentence len not equal to min sentences in paragraph"
+            print "Vectorized sentence len not equal to min sentences in sample, INPUT_VECTOR_LENGTH"
             return None
         elif remove < 0:
-            # Do not have sentences equal to MIN_SENTENCES_IN_PARAGRAPH
-            print ">>>>>>>>>>>> Found %d sentences instead of %d" %(len(sample_vec), MIN_SENTENCES_IN_PARAGRAPH)
+            # Do not have sentences equal to INPUT_VECTOR_LENGTH
+            #print ">>>>>>>>>>>> Found %d sentences instead of %d" %(len(sample_vec), INPUT_VECTOR_LENGTH)
             return None
 
         try:
             if len(sample_vec) != len(sample):
                 raise Exception(">>>>>>>>> Found %d sentences in a sample instead of %d. (Skipped sentences while using word2vec)" %(len(sample_vec), len(sample)))
-            temp = np.hstack(sample_vec)
+            
+            ##########################################################
+            ############ Check karle hstack()/vstack() chahiye
+            ##########################################################
+            temp = np.vstack(sample_vec)
+            #temp = np.hstack(sample_vec)
         except Exception, e:
             print ">>>>>>>>>>>>>>>", e
             #pdb.set_trace()
