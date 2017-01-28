@@ -1,0 +1,212 @@
+==========
+Ms 
+Jones  a single   year old associate editor for a large publishing house  is treated by Dr 
+Burns for mild hypertension 
+On this particular visit  Ms 
+Jones indicates that she has been experiencing episodes of burning and pressure type chest pain  or  times per week  lasting for about  to  minutes  which usually are relieved by Maalox 
+The episodes have occurred at work generally about an hour after lunch 
+She had ascribed these to tension related to her job but became concerned last week when they occurred during her aerobics class 
+Each time the pain occurred about  minutes into the class and went away with rest after about  minutes 
+Ms 
+Jones admits that although she knows that such symptoms could be a sign of heart trouble  she cannot believe that this could be causing the problem because she is in good shape physically  has never smoked  and does not have a family history of heart disease 
+In fact  she participated in the class yesterday and did not experience any discomfort 
+Upon hearing this  Dr 
+Burns knows that Ms 
+Jones is concerned about the possibility of heart disease as a cause for her symptoms and is fearful of discovering that anything might be wrong 
+After a more complete description of the chest pain radiation  location  quality  duration  and description of other episodes and a directed physical examination  Dr 
+Burns will need to decide on an optimal course of action for Ms 
+Jones and make a recommendation to her 
+Coronary artery disease CAD is a major health problem in the United States  and chest pain is a common medical complaint encountered by internists and other physicians who provide care for adults 
+Accordingly  Dr 
+Burns has devoted special emphasis to this subject in the time he has available for reading and in his other continuing education activities 
+He knows that a number of workers have collected data from patients with chest pain that might be angina pectoris classically  chest pain due to myocardial ischemia occurring on a consistent basis with physical activity and relieved by rest and have categorized the pattern of pain into several subsets that correlate with the probability of finding serious coronary artery disease by coronary arteriography 
+Dr 
+Burns considers the following subsets  typical or classic angina pain that occurs consistently with exercise and is relieved by rest within  minutes  atypical chest pain pain that has some features of angina but does not have a consistent relationship with activity and relief by rest  and noncardiac chest pain i e   pain that has no features resembling angina 
+Such data have been derived from clinical databases where historical information has been collected from a large number of patients  typically from a few hundred to several thousand 
+To arrive at a plausible estimate of Ms 
+Jones's likelihood of coronary artery disease on the basis of her history and the results of his physical examination  Dr 
+Burns refers to an article by Drs 
+Diamond and Forrester  entitled Analysis of Probability as an Aid in the Clinical Diagnosis of Coronary Artery Disease 
+Diamond and Forrester related the probability of a person with a complaint of chest pain having coronary artery disease to age  sex  and pain pattern 
+A modification of their tabular data as it appeared in that article is reproduced in Table 
+Dr 
+Burns interprets Ms 
+Jones's pain pattern as atypical angina  mainly because of the inconsistent relationship with physical activity 
+Extrapolating from Table    he notes that a reasonable estimate for the likelihood that a woman of Ms 
+Jones's age with atypical angina has significant coronary artery disease is about 
+To arrive at a specific estimate for Ms 
+Jones  he decides to revise this figure downward to  because she is at the younger end of the age interval  to  and lacks other risk factors besides mild hypertension 
+Dr 
+Burns recognizes his uncertainty about this estimate and considers this likelihood to lie within a range of  to   although his best guess about Ms 
+Jones's likelihood of CAD is 
+Dr 
+Burns now must decide whether he should recommend a noninvasive test such as the ECG treadmill stress test or an invasive procedure such as coronary arteriography or simply do nothing 
+Although other exercise tests are available  such as the stress thallium test  Dr 
+Burns considers the treadmill test the simplest to perform and the preferred noninvasive test for Ms 
+Jones 
+The coronary arteriogram has been considered the definitive test for determining the presence and severity of CAD and would provide the best information about the anatomic state of Ms 
+Jones's coronary arteries 
+It has served as the gold standard against which the accuracy of other diagnostic tests for CAD are measured 
+An arteriogram would require a one day hospitalization  is invasive and is associated with a mortality risk of about   or with morbidity such as myocardial infarction   arterial complications   and ventricular fibrillation  Franch et al 
+On the other hand  the stress test is safer risk of mortality on the order of    can be done in Dr 
+Burns's office  and would allow a revised determination of Ms 
+Jones's likelihood of having serious CAD Clarke and Bruce 
+A patient undergoing an ECG stress test walks on a moving treadmill that is increased in speed at  minute intervals 
+The test is continued until the patient either experiences signs or symptoms of cardiac dysfunction or achieves  of his or her predicted maximal heart rate for a specified period of time 
+In addition to the above symptoms  a specific electrocardiographic feature is looked for  depression of the ST segment 
+Figure 
+shows a picture of the normal ECG  and a change in the ST segment that would be associated with myocardial ischemia 
+This segment may become depressed to a variable degree           or  mm or more 
+As the criterion i e   the cutoff point for an abnormal ST segment depression changes  the likelihood of making errors in interpretation also changes 
+Dr 
+Burns now quickly goes through a series of calculations to determine what Ms 
+Jones's likelihood of CAD would be depending on the result of the exercise test 
+This is called the posttest likelihood  or alternatively  the predictive value of the test result 
+Dr 
+Burns uses a hand held programmable calculator to perform these calculations quickly and automatically  but for purposes of this discussion  we will describe the process of determining the posttest likelihood as Dr 
+Burns would if he were doing this by hand 
+Some important terms and the notation used to represent them are explained in Table 
+Three parameters must be known or estimated in order to derive Ms 
+Jones's likelihood of CAD after being tested on the treadmill 
+These are the sensitivity and specificity of the treadmill test and the prior probability of CAD in Ms 
+Jones 
+Recall that Dr 
+Burns estimated the latter as between  and  because of Ms 
+Jones's age and pain pattern 
+The sensitivity and specificity of a diagnostic test are determined by comparing the test results in an appropriate sample of individuals against a gold standard more will be said about these parameters later in the chapter 
+Dr 
+Burns depended on published results for his estimates Diamond and Forrester    Goldschlager    Rifkin and Hood    suggesting that using a sensitivity of 
+and a specificity of 
+would be reasonable 
+Once the probability of disease and the sensitivity and specificity of the test are known  the predictive value positive PVP and the predictive value negative PVN  that is  posttest likelihoods  can be calculated using Bayes's formula 
+The PVP equation may be considered in another way that perhaps is clearer 
+The numerator of the equation is simply the true positive rate  that is  the probability of a positive test among those with disease multiplied by the probability of having the disease 
+The denominator is composed of two terms  the true positive rate plus the false positive rate 
+This quotient actually is the definition of the positive predictive value 
+An additional form of the equation also may be useful 
+Similarly  the PVN is calculated by the following 
+Dr 
+Burns believes from reviewing clinical studies that if Ms 
+Jones achieves  of her predicted maximal heart rate when she takes the stress test  then its sensitivity for detecting serious CAD would be 
+and its specificity 
+He uses these estimates to determine the probabilities of interest 
+If Ms 
+Jones's probability of having CAD before the test were    then 
+If this probability were    then 
+An alternative method for calculating predictive values is shown in Table 
+Table  A indicates that PVP is derived by the following  true positive ratetrue positive rate + false positive rate 
+Similarly  the PVN is obtained by  true negative ratetrue negative rate + false negative rate 
+As indicated in Table  B  out of every  patients   will have disease since Dr 
+Burns has estimated Ms 
+Jones's likelihood at 
+Now the sensitivity and specificity can be used to derive the numbers of patients falling into individual cells 
+Of these  with CAD   will be test positive sensitivity = 
+Of the  people without CAD   will be test negative specificity = 
+The predictive values will be 
+An essential point to note is that the predictive values change as the prior estimate of Ms 
+Jones's probability of having CAD changes 
+Thus  for a physician to interpret a result of a less than perfect test meaningfully requires estimation of the patient's likelihood of disease before the test is performed 
+Figure 
+illustrates this principle using the ECG stress test by relating the predictive value positive and negative of an exercise test to a changing prior probability of CAD at a constant test sensitivity of 
+and a specificity of 
+These and the other figures reproduced here were quickly graphed by Dr 
+Burns using his desktop personal computer and the appropriate software program 
+Table 
+gives the PVP and PVN in tabular form as the prevalence of CAD increases 
+By using the exercise test result to revise Ms 
+Jones's probability of CAD  Dr 
+Burns can now decide if the PVN would be such that he and Ms 
+Jones would feel reassured enough not to pursue a coronary arteriogram and conversely  if the PVP would be high enough to recommend pursuing a coronary arteriogram 
+In arriving at these threshold probabilities at which the choice of treatment options would be affected  Dr 
+Burns must analyze his beliefs about the natural history of significant CAD  the efficacy and disadvantages of the alternative treatments for this problem  and Ms 
+Jones's attitudes about various health outcomes 
+This is no small task and requires the ability to evaluate results of clinical research  strong communication skills  and experience 
+Using diagnostic information to revise clinical probabilities is only a first step in the process of clinical decision making 
+Completing this process requires integrating this revised probability estimate with probabilistic information regarding the different treatment options and the patient's attitudes toward the treatments 
+Acquiring skills in formal decision analysis will permit the clinician to follow through with the probabilistic approach to diagnosis described here 
+==========
+In calculating Ms 
+Jones's likelihood of CAD based on stress test results  Dr 
+Burns needed to use the sensitivity and specificity of this test 
+He obtained these values from published reports of stress test results in persons known to have or to be free of CAD according to cardiac catheterization 
+He understood that these test characteristics express how good or how poor a test is in predicting the presence of disease 
+His understanding of how these characteristics are derived helped him decide whether or not to use the stress test 
+Most diagnostic tests are indirect measures of disease and thus must be standardized against some best estimate of disease  an estimate often referred to as the gold standard 
+For the stress test  the gold standard has been coronary arteriography 
+The validity of a diagnostic test is determined by comparing test results with the gold standard results  both performed in an appropriate number of selected patients 
+When agreement does not occur  the diagnostic test is said to be falsely positive or falsely negative 
+Thus the sensitivity and specificity of a diagnostic test describe the ability of the test to correctly classify a patient when compared with a gold standard 
+One additional feature that Dr 
+Burns notes is the test cutoff point 
+Clinicians generally desire that diagnostic test results be reported as either abnormal or normal i e   categorical 
+This desire for categorizing results presents a problem  since measurements of biologic variables usually form a continuum of values 
+Continuous values can be made categorical by selecting a point cutoff point along the continuum and assigning all values on one side of this point to the abnormal category and those on the other side of the point to the normal category 
+The sensitivity and specificity of a test are determined by where the cutoff point is selected 
+This is true because test values between diseased and non diseased populations usually overlap 
+If the cutoff point is chosen such that the test has high sensitivity high true positive rate  then the specificity true negative rate usually is lowered 
+This unavoidable tradeoff is important to the clinician  since different cutoff points will produce different test characteristics 
+Thus the clinician will obtain different predictive values based on the particular cutoff point used 
+In our example with the exercise stress test  the cutoff point can be set at          or  mm of ST depression 
+The effect of using different cutoff points is seen in Figure 
+If the cutoff point is chosen as an ST segment depression of > 
+mm  the test has a higher PVP at any given pretest probability than if less stringent cutoff points were chosen 
+This occurs because there will be fewer false positive tests 
+However  it should be remembered that there also will be a greater number of false negative test results 
+This is the price paid for choosing a more stringent criterion for an abnormal result 
+In summary  Dr 
+Burns realizes that the characteristics of a test determine its validity and usefulness in a particular disease 
+In addition  he knows that test characteristics vary depending on the choice of the cutoff point 
+The question where to set the cutoff point for a test has received considerable attention and has stimulated clinicians to look at receiver operating characteristic curves of a test and at likelihood ratios 
+==========
+For some clinicians  the likelihood ratio is a more useful test characteristic than sensitivity and specificity for estimating the probability of a disease following a test result 
+Using the likelihood ratio plus the estimate of the prior odds of disease pretest odds  the clinician can calculate  for a positive test  the posttest odds of disease 
+This is done by multiplying the likelihood ratio of the test by the prior odds of disease to obtain the posttest odds of disease 
+In the vignette involving Ms 
+Jones and Dr 
+Burns  the probability of disease before testing was thought to be  at most 
+The prior odds for disease were thus 
+to  sometimes written 
+For a positive exercise test  the posttest odds would be 
+to  i e   about 
+The formula is as follows 
+The odds of disease are a simple ratio between the probability of having a disease divided by the probability of not having the disease  pD+{l pD+} 
+For a  probability of having a disease  the odds of disease will be 
+divided by    also written as 
+The likelihood ratio is a measure of the efficacy of a test and is defined as the ratio of the true positive rate TP divided by the false positive rate FP 
+This is the same as dividing the sensitivity of a test by one minus the test specificity   specificity 
+Table 
+indicates that the likelihood ratio for the stress test is 
+divided by 
+minus 
+As indicated in this table  the prior odds of disease are calculated by dividing the prior prevalence by one minus the prior prevalence 
+Multiplying the prior odds by the likelihood ratio gives the last column  which is the posttest odds of disease if the test is positive 
+The posttest odds are easily converted to posttest probability by using the odds in the numerator divided by  plus the odds i e 
+=    or 
+Because the likelihood ratio incorporates both the sensitivity and specificity of a test  its value will vary depending on the cutoff point chosen 
+The different likelihood ratios for a particular test as the cutoff point changes may be derived from the receiver operating characteristic ROC curve for the particular test under consideration 
+This curve is a plot of the sensitivity versus  minus the specificity for a test as the cutoff point is changed 
+Using his personal computer  Dr 
+Burns can easily plot this curve with data obtained from the laboratory 
+In minutes he can produce a plot such as that seen in Figure    a hypothetical ROC curve for the stress test 
+Any pair of coordinates taken from this curve may be used to calculate the likelihood ratio and thus  along with the prior odds of disease  may be used to calculate the posttest odds of disease 
+It is clear from this curve that both the false positive and false negative rates are low if a cutoff point of 
+or 
+is chosen 
+ROC curves may also be used to compare the efficiency of different diagnostic tests used for a particular disease 
+Hanley and McNeil  give an excellent discussion of this use of ROC curves 
+A test of very high specificity  for example  would give a relatively large likelihood ratio even if the sensitivity of the test were low 
+This occurs because   specificity in the denominator  if a small value  will give a relatively large likelihood ratio 
+This may be seen in Table 
+where the cutoff point has been set to give a specificity of  and a sensitivity of 
+In this case  the likelihood ratio is 
+and  as can be seen by multiplying this value times the pretest odds  will give a much higher posttest odds than in the data in Table 
+Unfortunately  something must be lost for obtaining a higher likelihood ratio  and in this case the false negative rate is   minus 
+==========
+When the student actually goes to the literature to learn the performance characteristics of signs and symptoms and other tests  he or she will be struck by the divergent estimates reported 
+The sources of such variability derive from patient selection factors  differences in technique in performing the test from center to center  different stringency criteria for what constitutes an abnormal result  interobserver variability in reading test results  and differences in quality of test administration 
+Thus it is important to be able to evaluate published reports with respect to how validly they have studied these performance characteristics 
+Discussing such skills is beyond the scope of this chapter but Ransohoff and Feinstein  and a report from the Department of Clinical Epidemiology and Biostatistics of McMaster University  contain excellent discussions of such issues 
+Second  the clinician still needs to incorporate the probabilistic information gained from the history  physical examination  and laboratory tests into patient management decisions 
+In many situations these decisions are complex  and for selected clinical situations we advocate using decision trees as a tool to enable one to maintain an explicit approach to patient management 
+It makes little sense to use an explicit approach to diagnosis and then suddenly hide the assumptions and steps in reasoning that went into making a therapeutic management decision 
+==========

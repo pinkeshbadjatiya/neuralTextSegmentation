@@ -1,0 +1,172 @@
+==========
+Arterial blood gases ABGs is a collective term applied to three separate measurementspH  Pco  and Pogenerally made together to evaluate acid base status  ventilation  and arterial oxygenation 
+Oxygen O and carbon dioxide CO are the most important respiratory gases  and their partial pressures in arterial blood reflect the overall adequacy of gas exchange 
+Pao is affected by age and altitude 
+Paco by altitude 
+Therefore  Pao must be individually calculated for each patient  and both determinations must be interpreted against local normal values 
+Hydrogen is not present in blood as a gas and  therefore  does not exert a partial pressure 
+However  pH  which measures hydrogen ion activity  is a conventional part of every arterial blood gas determination 
+The normal range for blood pH is 
+to 
+Some calculated or derived variables may be reported with the ABGs 
+The bicarbonate concentration  which can be calculated from the pH and Pco  is the most useful of these 
+Others  such as base excess and base deficit  are not essential and may be confusing 
+==========
+Accurate results for ABGs depend on collecting  handling  and analyzing the specimen properly 
+Clinically important errors may occur at any of these steps  but ABG measurements are particularly vulnerable to preanalytic errors 
+The most common problems include nonarterial samples  air bubbles in the sample  either inadequate or excessive anticoagulant in the sample  and delayed analysis of an un cooled sample 
+A proper blood sample for ABG analysis consists of a  to  ml arterial specimen collected anaerobically from a peripheral artery in a   or  ml plastic or glass  airtight syringe fitted with a small bore needle 
+Any air bubbles inadvertently introduced during sampling must be promptly evacuated 
+Room air has a Po  of approximately  mm Hg sea level and a Pco of essentially zero 
+Thus  air bubbles that mix and equilibrate with arterial blood will shift the Pao toward  mm Hg and will lower the Paco 
+Heparin must be added to the syringe as an anticoagulant 
+Because the pH of heparin is near    and the Po and Pco of the heparin solution are near room air values  excess heparin can alter all three ABG measurements 
+Very little heparin is actually needed in the sample to prevent clotting 
+to 
+ml of a dilute solution  unitsml will anticoagulate  ml of blood without affecting its pH 
+Pco  or Po 
+After flushing the syringe with heparin  a sufficient amount usually remains in the dead space of the syringe and needle for anticoagulation without distortion of the ABG determination 
+After collection  the specimen should be analyzed expeditiously 
+If a delay of more than  minutes is anticipated  the specimen must be immersed in an ice bath 
+Leukocytes and platelets continue to consume oxygen in the sample after it is drawn and can cause a significant fall in Pao over time at room temperature  especially in the setting of leukocytosis or thrombocytosis 
+Cooling will prevent any clinically important effect for at least  hour by decreasing the metabolic activity of these cells 
+ABGs are now routinely measured with an automated analyzer 
+The basic components of such a unit are three electrodes  one each for determining pH  Pco  and Po 
+The pH electrode measures the potential difference between a measuring electrode which contains the sample in contact with a special glass membrane permeable only to H+ ions and a reference electrode which has a known  stable pH 
+From the voltage across these electrodes  the sample pH is calculated 
+The Pco electrode Severinghaus electrode employs an adaptation of the pH measurement 
+Carbon dioxide from the blood sample equilibrates across a gas permeable membrane with a bicarbonate solution in a reaction that generates H+ ions 
+The Pco of the sample is determined indirectly by sensing the pH change in this solution 
+The Po electrode Clark electrode determines Po amperometrically 
+Oxygen from the blood sample diffuses across a semipermeable membrane and is reduced at the cathode of a polarographic electrode 
+This reaction produces a measurable current that is directly proportional to the sample Po 
+Each electrode is calibrated at two reference points in the typical operational range 
+For the pH electrode  two buffer solutions pH = 
+and 
+are the standards 
+For the Pco and Po electrodes  two references gases usually  CO   O   N  and  CO   N are utilized 
+After calibration  the accuracy and reliability of measurements may be checked by analyzing commercially available quality control samples with known values of pH  Pco and Po that span the range of common clinical values 
+Although these procedures generally ensure valid measurements  high Pao values > mm Hg present a potential source of error 
+The Po electrode is not linear and therefore may be inaccurate at values far beyond its calibration points  mm Hg and  mm Hg at sea level for the reference gases above 
+Consequently  the precision of Pao values exceeding  mm Hg is uncertain unless the electrode has been recalibrated in an appropriate range  and this is not generally feasible in an automated analyzer 
+The electrodes are maintained at °C in a thermostatically regulated waterbath  therefore  all ABG measurements are made at °C regardless of the patient's temperature 
+Nonetheless  pH  Paco  and Pao are all temperature dependent because gas solubilities are a function of temperature 
+When body temperature is higher than °C  the reported Pao and Paco measured at °C will be lower than the actual values in the patient  the converse holds when body temperature is below °C 
+Both equations and nomograms have been developed to adjust the °C values to those corresponding to the patient's temperature 
+The equations  however  are too complex for easy calculation 
+The effect of varying temperature on a normal set of ABGs is illustrated in Table 
+Whether to correct ABG measurements especially the Pao to the patient's temperature or simply to report them at °C is a controversial issue  and laboratory practices vary in this area 
+It is relatively standard practice to report the pH and Paco at °C without correction 
+There is no uniform practice regarding Pao  and the clinician must be familiar with local policy 
+As shown in Table    the effect of temperature changes on pH  Paco  and Pao over the usual clinical range of ° to °C is relatively small 
+The issue is clinically relevant primarily in hypothermia and hyperthermia 
+==========
+The hydrogen ion H+ concentration determines the acid base status of the blood 
+For convenience  the H+ concentration is customarily expressed as pH  defined as the negative logarithm base  of the H+ concentration 
+Note that H+ concentration and pH are inversely related  an increasing H+ concentration increasing acidity corresponds to a declining pH  and vice versa 
+The normal H+ concentration of 
+mEqL is equivalent to a pH of 
+The normal range of blood pH is 
+to 
+The Pao is the partial pressure of oxygen in arterial blood 
+The normal range for Pao is affected by age and altitude 
+As a result of changes in overall matching of ventilation with perfusion  normal Pao declines with advancing age 
+Regression equations have been published to estimate this decrease  however  there is some disparity in the results  probably attributable to heterogeneous study populations and nonuniform study conditions 
+Hence  these equations are only guidelines 
+For example  Sorbini et al 
+ found the following prediction equation for supine subjects at sea level 
+Based on this equation  the lower limit of normal for Pao at age  would be approximately  mm Hg 
+At elevations above sea level  the partial pressure of inspired oxygen falls with the barometric pressure  and the normal Pao decreases concomitantly 
+For example  at  m barometric pressure  mm Hg  the predicted normal Pao in a healthy  young subject is approximately  mm Hg  this contrasts with a value close to  mm Hg at sea level 
+Therefore  at locations substantially above sea level  local normal values that correct for altitude must be utilized in ABG interpretation 
+The Paco is the partial pressure of carbon dioxide in arterial blood 
+The normal range is  to  mm Hg and does not vary significantly with age 
+Nevertheless  normal Paco  tends to be lower at high altitudes because ventilation is stimulated  and local norms must be established 
+Cellular metabolism and whole organ function are optimum over a relatively narrow range of pH 
+Hence  the acid base status of the blood is closely regulated 
+Homeostasis is maintained by three mechanisms   buffers that mitigate changes in pH  especially the carbonic acidbicarbonate HCOHCO pair   the lungs  which control Paco  and  the kidneys  which regulate plasma bicarbonate 
+The central relationship among these is the following reaction 
+Dissolved CO is hydrated in an equilibrium reaction to form the strong acid  HCO 
+The amount of dissolved CO is directly proportional to the Paco  the proportionality constant a being the solubility coefficient of CO 
+Therefore  the lungs effectively regulate the HCO concentration 
+Carbonic acid reversibly dissociates into H+ and HCO 
+Metabolic acids are titrated primarily by HCO  and the HCO concentration is ultimately under renal control 
+The interdependence among these may be expressed as the classic Henderson Hasselbalch equation for pH or rearranged into an equation for H+ 
+Notice in both equations that pH  or H+ concentration  depends on the ratio of Paco to HCO  and not on the absolute value of either one alone 
+Acidosis and alkalosis refer to pathophysiologic disturbances that tend to increase or decrease hydrogen ion concentration respectively 
+Primary disturbances in Paco cause the respiratory acid base disorders  whereas primary alterations in bicarbonate are responsible for the metabolic derangements 
+Each primary disturbance elicits a compensatory response  which is usually incomplete  but returns the pH toward normal 
+Thus  an acidosis or alkalosis does not necessarily result in an acidemia pH < 
+or alkalemia pH > 
+The simple acid base disorders are illustrated in Table 
+Mixed acid base disturbances are the result of two or more simple disorders occurring together 
+While these are more complex  their recognition and analysis are predicated on a thorough understanding of the primary disorders 
+The primary purposes of respiration are to provide oxygen to the cells for aerobic metabolism and to excrete the carbon dioxide produced by this metabolic activity 
+This requires the integrated function of both the respiratory system for gas exchange between alveolar air and pulmonary capillary blood  and the cardiovascular system for gas transport to and from the metabolizing tissues 
+The respiratory system may be divided into two parts  the respiratory pump and the lung 
+The respiratory pump includes the thoracic cage and abdomen  the respiratory muscles  the respiratory control centers  and the neural interconnections 
+The major function of the respiratory pump is ventilation of the lung  whereas the primary role of the lung itself is gas transfer 
+Factors that influence gas exchange in the lung include  movement of gas into and out of the lung ventilation   blood flow through the lung perfusion   the regional distributions of ventilation and perfusion ventilation perfusion matching  and  diffusion across the alveolar capillary membrane 
+The overall adequacy of gas exchange for oxygen and carbon dioxide is reflected by the Pao and Paco 
+Carbon dioxide  the major by product of oxidative metabolism  is transported to the lung in venous blood and eliminated through alveolar ventilation 
+The Paco is directly proportional to carbon dioxide excretion rate co and inversely proportional to alveolar ventilation A 
+It will rise if CO production increases and is not balanced by an appropriate rise in alveolar ventilation  or if alveolar ventilation decreases at a given CO production 
+Therefore  the Paco is an index of the adequacy of alveolar ventilation in relation to carbon dioxide production 
+Alveolar ventilation is that portion of the total minute ventilation E that participates effectively in gas exchange 
+The remainder of minute ventilation reaches only anatomic or physiologic dead space  it does not participate in gas exchange and is called dead space ventilation D 
+Alveolar ventilation  then  is total minute ventilation minus dead space ventilation 
+Alveolar ventilation may fall due to a decrease in minute ventilation with a normal dead space  or due to an increase in dead space ventilation without a compensatory increase in minute ventilation 
+Oxygen is essential for aerobic metabolism 
+The transfer of oxygen from alveolar air to pulmonary capillary blood is affected by the partial pressure of oxygen in the alveoli  its diffusion across the alveolar capillary membrane  and the matching of alveolar ventilation to capillary perfusion 
+There are five possible causes of a reduction in Pao  low inspired oxygen tension  alveolar hypoventilation  diffusion impairment  ventilation perfusion mismatching  and right to left shunt 
+In addition  a low mixed venous oxygen tension will magnify the reduction in Pao due to ventilation perfusion mismatching and shunt 
+The partial pressure of oxygen in the alveoli PAo may be determined from the ideal alveolar gas equation 
+where PB is barometric pressure  PHO the partial pressure of water vapor  mm Hg  FIo the fractional concentration of inspired oxygen  and R the respiratory exchange ratio usually 
+The alveolar arterial oxygen tension gradient  PA ao  is the difference between calculated PAo and measured Pao 
+The normal gradient increases with age  but is usually in the range of  to  mm Hg 
+If either alveolar hypoventilation or a low inspired oxygen tension is the cause of a decreased Pao  this gradient remains normal 
+In contrast  an abnormality in either diffusion or ventilation perfusion matching will increase PA ao 
+Diffusion  however  is rarely the cause of a low Pao at rest 
+Arterial oxygen content Cao is the sum of hemoglobin bound oxygen and dissolved oxygen 
+where Hb is the hemoglobin concentration and Sao the arterial O saturation 
+The contribution of dissolved oxygen is very small  and the major impact of Pao on oxygen content is through its effect on hemoglobin saturation Figure 
+Above a Pao of  mm Hg  the dissociation curve is relatively flat and Sao increases very little even with a large increment in Pao 
+In contrast  below Pao  mm Hg  the curve is steeper and Sao decreases significantly with any decrement in Pao 
+Also  as illustrated in Figure    the position of the oxyhemoglobin dissociation curve may be shifted by factors that alter the configuration of the hemoglobin molecule and change its affinity for binding oxygen 
+Oxygen delivery to the tissues is the product of cardiac output and arterial oxygen content 
+Oxygen delivery can be compromised by a reduction in any component cardiac output  hemoglobin concentration  or Sao 
+However  a decrease in one component may be offset by an increase in another to maintain oxygen delivery 
+==========
+An ABG contains data relevant to three areas  acid base status  ventilation  and arterial oxygenation 
+Clinical estimates of the presence or severity of abnormalities in these areas are often deceptive 
+Consequently  an ABG is useful when disturbances are apparent or suspected in any of the three parameters 
+A systematic approach to interpretation  in conjunction with appropriate clinical correlation  will help delineate problems in each of these areas and will guide the institution and adjustment of supportive therapy when necessary 
+First  consider the acid base status 
+The simple acid base disorders are presented in Table 
+The differential diagnosis for each category is relatively limited and may be found in most medicine texts 
+Diagnosis is often aided by using other laboratory parameters  such as serum electrolytes  along with the ABG and clinical data 
+Treatment should be directed toward the underlying cause and will depend on the nature and severity of the disturbance 
+Prompt intervention is generally necessary at the extremes of acidemia pH < 
+and alkalemia pH > 
+because adverse effects on the cardiovascular and central nervous systems are common when pH exceeds these limits 
+Next  the ventilatory status should be evaluated 
+While this is an extension of the acid base analysis  it focuses attention on ventilatory function 
+Recall that the Paco is an index of the adequacy of alveolar ventilation in relation to carbon dioxide production Eq 
+Normally a primary rise in Paco will trigger an increase in ventilation and restore the Paco if the respiratory pump is intact 
+Hence  when hypercapnia and respiratory acidosis are present  some degree of ventilatory failure has occurred 
+Common causes include central nervous system depression or disease  neuromuscular disorders  thoracic cage deformities  and obstructive lung disease 
+In addition  respiratory muscle fatigue due to increased work of breathing from any cause may culminate in ventilatory failure 
+If the respiratory acidemia is severe or progressive  mechanical support of ventilation may be necessary while other measures are directed at the underlying process 
+Finally  arterial oxygenation should be assessed 
+A Pao below the predicted lower limit of normal Eq 
+or a widened PA ao indicates an abnormality in gas exchange that should be recognized  but may not always significantly impair arterial oxygenation 
+A Pao of  mm Hg provides approximately  hemoglobin saturation if acid base status and temperature are normal Figure 
+However  below Pao  mm Hg significant desaturation occurs as the Pao falls  and arterial oxygen content Eq 
+decreases proportionately 
+When oxygen delivery is compromised by a low arterial oxygen content desaturation  anemia or by an inadequate cardiac output  critical tissue hypoxia may occur 
+The most sensitive sites are the central nervous system and the heart  but oxygen deprivation is potentially harmful to all aerobic  metabolically active tissues 
+In most clinical circumstances a reasonable goal of therapy is to maintain the Pao in the  to  mm Hg range 
+In some cases  slightly lower levels may be acceptable  however  there is generally little to be gained by increasing the Pao substantially above this range 
+When needed  supplemental oxygen should be administered with these guidelines in mind 
+In addition  attention should be given to hemoglobin concentration and cardiac output to optimize oxygen delivery 
+==========
