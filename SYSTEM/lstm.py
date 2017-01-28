@@ -115,13 +115,27 @@ def train_LSTM(X, Y, model, train_split=0.8, epochs=10, batch_size=32):
 
     model.fit(X_train, Y_train, nb_epoch=epochs, batch_size=batch_size, validation_data=(X_test, Y_test))
 
-    model.evaluate(X_test, Y_test, batch_size=batch_size)
+    # WIkipedia
+    #model.evaluate(X_test, Y_test, batch_size=batch_size)
+    #pred = model.predict(X_test)
+    #rounded = np.round(pred)
+    #result = helper.windiff_metric_NUMPY(Y_test, rounded)
+    #print result
 
-    pred = model.predict(X_test)
+    # Clinical
+    SAMPLE_TYPE_cli, X_cli, Y_cli = get_input(sample_type=4, shuffle_documents=False, pad=False)
+    
+    # Temporary TRUNCATION
+    TRUNCATE_LEN = X_train.shape[1]
+    print "NOTE: Truncating the Test dataset(clinical) from %d sentences to %d sentences." %(X_cli.shape[1], TRUNCATE_LEN)
+    X_cli, Y_cli = X_cli[:,:TRUNCATE_LEN,:], Y_cli[:,:TRUNCATE_LEN,:]
+    model.evaluate(X_cli, Y_cli, batch_size=batch_size)
+    pred = model.predict(X_cli)
     rounded = np.round(pred)
-
-    result = helper.windiff_metric_NUMPY(Y_test, rounded)
+    result = helper.windiff_metric_NUMPY(Y_cli, rounded, window_size=10)
     print result
+
+
     pdb.set_trace()
 
     #rounded = [round(x) for x in pred]
@@ -205,6 +219,7 @@ if __name__ == "__main__":
     #model = lstm_model(data.shape[1], 25, get_embedding_weights())
     #score = model.evaluate(X_test, y_test, batch_size=16)
     #pdb.set_trace()
+
     train_LSTM(X, Y, model, train_split=0.7, epochs=15, batch_size=4)
     #score = model.evaluate(X_test, y_test, batch_size=16)
     #pdb.set_trace()
