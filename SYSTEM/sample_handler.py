@@ -3,6 +3,7 @@ import pdb
 
 from encode_tfidf import TFIDF
 from encode_mean import MeanWord2vec
+from encode_2d_repr import CustomSent2vec
 
 from helper import unison_shuffled_copies
 from parse_xml import DataHandler
@@ -16,7 +17,7 @@ from parse_xml import INPUT_VECTOR_LENGTH
 import time
 import load_data
 
-def get_input(sample_type, shuffle_documents, pad):
+def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
     # Returns X, Y
     # X: Each row is a sample
     # Y: A 1-D vector for ground truth
@@ -36,6 +37,8 @@ def get_input(sample_type, shuffle_documents, pad):
         #sample_type, samples = data_handler.get_sequence_samples_PARALLEL()  # Get samples, each sample is a document (a set of sentences resulting in a sequence)
     elif sample_type == 4:
         # type4: Clinical sequence of a single sample
+        # X.shape = (1, TOTAL_SENTENCES)
+        # Y.shape = (TOTAL_SENTENCES, 1)
         ld = load_data.LoadData()
         sample_type, samples = ld.load_clinical_sequence()
     else:
@@ -45,8 +48,11 @@ def get_input(sample_type, shuffle_documents, pad):
     del data_handler
     print "Samples Loading took", time.clock() - start, "seconds"
 
-    #model = TFIDF()
-    model = MeanWord2vec()
+    model = trained_sent2vec_model
+    if not trained_sent2vec_model:
+        #model = TFIDF()
+        #model = MeanWord2vec()
+        model = CustomSent2vec()
 
     X, Y = [], []
     for sample in samples:
@@ -67,6 +73,7 @@ def get_input(sample_type, shuffle_documents, pad):
         X.append(sentences)            # X[0].shape = matrix([[1,2,3,4.....]])
         Y.append(np.asarray(groundTruths))          # Y[0] = [1, 0, 0, ..... 0, 1, 0, 1....]
     X, Y = np.asarray(X), np.asarray(Y)
+    
 
     print "Total samples: %d" %(len(X))
     if shuffle_documents: # Shuffle the X's and Y's if required
@@ -77,6 +84,13 @@ def get_input(sample_type, shuffle_documents, pad):
         print "NOTE: Sample type2 requires PADDING!"
 
     if pad:
+        AVERAGE_WORDS = 20
+        STATIC_PAD = 1
+        if STATIC_PAD:
+            max_len = AVERAGE_WORDS
+        else:
+            max_len = None  # Uses the max length of the sequences
+
         doc_lengths = [len(doc) for doc in X]
         print "Padding sequences. Doc-lengths: Mean=%d, Std=%d" %(np.mean(doc_lengths), np.std(doc_lengths))
         # Both of them have to be in unison
@@ -84,7 +98,8 @@ def get_input(sample_type, shuffle_documents, pad):
         Y = pad_sequences(Y, padding="post", truncating="post", value=0.0, dtype=np.float32)
         print "Size of new X(after padding):", X.shape
 
-    return sample_type, X, Y
+    return sample_type, X, Y, model
+    #return sample_type, X, Y
 
 
 

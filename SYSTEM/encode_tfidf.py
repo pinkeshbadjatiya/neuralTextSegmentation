@@ -61,7 +61,7 @@ import numpy as np
 class TFIDF(object):
     def __init__(self):
         # tfidf.shape = (no_of_documents x vocab_size)
-        self.WIKI_SAVED_DATA_DIR = "/home/pinkesh/wiki_en_WITH_ALL_TOKENS/"
+        self.WIKI_SAVED_DATA_DIR = "/home/pinkesh/250GB_disk/wiki_en_WITH_ALL_TOKENS/"
         # Saved wiki data using gensim script
         if self.WIKI_SAVED_DATA_DIR[-1] != "/":
             sys.exit(1)
