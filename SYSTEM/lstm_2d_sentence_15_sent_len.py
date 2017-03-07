@@ -28,6 +28,7 @@ from sample_handler import get_input
 
 SAMPLE_TYPE_cli, X_cli, Y_cli, trained_sample_handler = None, None, None, None
 SAMPLE_TYPE_wiki, X_wiki, Y_wiki = None, None, None
+SAMPLE_TYPE_bio, X_bio, Y_bio = None, None, None
 GLOVE_EMBEDDING_DIM = 300
 
 def lstm_model(sequence_length, embedding_dim, embedding_matrix, vocab_size):
@@ -65,7 +66,7 @@ def lstm_model(sequence_length, embedding_dim, embedding_matrix, vocab_size):
         #model.add(Bidirectional(LSTM(200, return_sequences=True)))#, input_shape=(sequence_length, embedding_dim)))
         model.add(Dropout(0.5))
         model.add(TimeDistributed(Dense(1, activation='sigmoid')))
-        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+        model.compile(loss='binary_crossentropy', optimizer='adadelta', metrics=['accuracy'])
 
     elif which_model == 2:
         # Look back is equal to -INF
@@ -82,7 +83,7 @@ def lstm_model(sequence_length, embedding_dim, embedding_matrix, vocab_size):
     
         print 'Build MAIN model...'
         main_input = Input(batch_shape=(1, embedding_dim), dtype='float32', name='main_input')
-        embedded_input = Embedding(vocab_size + 1, GLOVE_EMBEDDING_DIM, weights=[embedding_matrix], input_length=embedding_dim, init='uniform')(main_input)
+        embedded_input = Embedding(vocab_size + 1, GLOVE_EMBEDDING_DIM, weights=[embedding_matrix], input_length=embedding_dim, init='uniform', trainable=True)(main_input)
         convs = []
         for i, n_gram in enumerate(ngram_filters):
             conv = Convolution1D(nb_filter=conv_hidden_units[i],
@@ -128,9 +129,12 @@ def custom_fit(X, Y, model, train_split=0.8, epochs=10):
 
         print "Batch size = 1"
         print 'Train...'
+        _total_docs = len(X_train)
+        _total_sentences = sum([sequence.shape[0] for sequence in X_train])
         for epoch in range(epochs):
             mean_tr_acc = []
             mean_tr_loss = []
+            _sentence_no = 0
             for i in range(len(X_train)):
                 #y_true = Y_train[i]
                 for sequence, truth in zip(X_train[i], Y_train[i]): # Sequence in document
@@ -140,15 +144,21 @@ def custom_fit(X, Y, model, train_split=0.8, epochs=10):
 
                     mean_tr_acc.append(tr_acc)
                     mean_tr_loss.append(tr_loss)
+                    _sentence_no += 1
+                    print ">> Epoch: %d/%d | Doc: %d/%d | Sent: %d/%d" %(epoch+1, epochs, i+1, _total_docs, _sentence_no+1, _total_sentences)
                 model.reset_states()
         
             print('accuracy training = {}'.format(np.mean(mean_tr_acc)))
             print('loss training = {}'.format(np.mean(mean_tr_loss)))
             print('___________________________________')
     
+    # Testing
     mean_te_acc = []
     mean_te_loss = []
     predictions = []
+    _total_docs = len(X_test)
+    _total_sentences = sum([sequence.shape[0] for sequence in X_test])
+    _sentence_no = 0
     for i in range(len(X_test)):
         for sequence, truth in zip(X_test[i], Y_test[i]):
             sequence = sequence.reshape((1, sequence.shape[0]))
@@ -157,8 +167,15 @@ def custom_fit(X, Y, model, train_split=0.8, epochs=10):
 
             mean_te_acc.append(te_acc)
             mean_te_loss.append(te_loss)
+            _sentence_no += 1
+            print ">> TEST >> Doc: %d/%d | Sent: %d/%d" %(i+1, _total_docs, _sentence_no+1, _total_sentences)
         model.reset_states()
 
+    print('accuracy testing = {}'.format(np.mean(mean_te_acc)))
+    print('loss testing = {}'.format(np.mean(mean_te_loss)))
+    print("Predicting...")
+    
+    for i in range(len(X_test)):
         predictions.append([])
         for sequence, truth in zip(X_test[i], Y_test[i]):
             sequence = sequence.reshape((1, sequence.shape[0]))
@@ -167,9 +184,6 @@ def custom_fit(X, Y, model, train_split=0.8, epochs=10):
             predictions[i].append(y_pred)
         model.reset_states()
 
-    print('accuracy testing = {}'.format(np.mean(mean_te_acc)))
-    print('loss testing = {}'.format(np.mean(mean_te_loss)))
-    
     print "Check windiff value"
     #rounded = np.round(predictions)
     result = helper.windiff_metric_NUMPY(Y_test, predictions, win_size=-1, rounded=False)
@@ -188,6 +202,7 @@ def split_data(X, Y, train_split):
 
 
 def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=32):
+    global X_wiki, Y_wiki, X_cli, Y_cli, X_bio, Y_bio
 
     which_model = 2
     if which_model == 2:
@@ -228,15 +243,21 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
 
 if __name__ == "__main__":
     # For which_model == 2
-    SAMPLE_TYPE_wiki, X_wiki, Y_wiki, trained_sample_handler = get_input(sample_type=2, shuffle_documents=True, pad=True)
+    #SAMPLE_TYPE_wiki, X_wiki, Y_wiki, trained_sample_handler = get_input(sample_type=2, shuffle_documents=True, pad=True)
+    #NO_OF_SAMPLES, MAX_SEQUENCE_LENGTH, EMBEDDING_DIM = X_wiki.shape[0], -1, X_wiki[0].shape[1]          #MAX_SEQUENCE_LENGTH is is already padded
+    
+    # For which_model == 2
+    # Biography data for training
+    SAMPLE_TYPE_bio, X_bio, Y_bio, trained_sample_handler = get_input(sample_type=5, shuffle_documents=False, pad=True)
+    NO_OF_SAMPLES, MAX_SEQUENCE_LENGTH, EMBEDDING_DIM = X_bio.shape[0], -1, X_bio[0].shape[1]          #MAX_SEQUENCE_LENGTH is is already padded
     
     # Clinical - Only for testing
     SAMPLE_TYPE_cli, X_cli, Y_cli, trained_sample_handler = get_input(sample_type=4, shuffle_documents=False, pad=True, trained_sent2vec_model=trained_sample_handler)
     
-    NO_OF_SAMPLES, MAX_SEQUENCE_LENGTH, EMBEDDING_DIM = X_wiki.shape[0], -1, X_wiki[0].shape[1]          #MAX_SEQUENCE_LENGTH is is already padded
 
     dictionary_object = trained_sample_handler.dictionary
     embedding_W = dictionary_object.get_embedding_weights()
 
     model = lstm_model(MAX_SEQUENCE_LENGTH, EMBEDDING_DIM, embedding_W, len(dictionary_object.word2id_dic))
-    train_LSTM(X_wiki, Y_wiki, model, embedding_W, train_split=0.7, epochs=10, batch_size=1)
+    #train_LSTM(X_wiki, Y_wiki, model, embedding_W, train_split=0.7, epochs=1, batch_size=1)
+    train_LSTM(X_bio, Y_bio, model, embedding_W, train_split=0.7, epochs=1, batch_size=1)

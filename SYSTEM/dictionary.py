@@ -15,6 +15,7 @@ class Dictionary:
         
         self.EMBEDDING_DIM = EMBEDDING_DIM
         self.word2vec = word2vec_model
+        self.ignore_words = ['of', 'and', 'to', 'a']
 
 
     def normalize_word(self, word):
@@ -41,7 +42,8 @@ class Dictionary:
             return self.word2id_dic[word]
         except KeyError:
             if word not in self.word2vec:
-                #print "WORD2VEC:  `%s` not found" %(word)
+                #if word not in self.ignore_words:       # Print words only if they do not belong to this list
+                #    print "WORD2VEC:  `%s` not found" %(word)
                 return self.word2id_dic['<UNK>']
             self.word2id_dic[word] = self.id_to_use_count
             self.id2word_dic[self.id_to_use_count] = word

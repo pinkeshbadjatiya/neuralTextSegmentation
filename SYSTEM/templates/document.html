@@ -1,0 +1,14 @@
+<!doctype html>
+<title>{{title}}</title>
+<body>
+<p>
+{%  for (sentence, gtruth) in document %}
+
+{% if gtruth %} </p><p> {% endif %}
+{{ sentence }}
+
+{% endfor %}
+</p>
+
+</body>
+</html>

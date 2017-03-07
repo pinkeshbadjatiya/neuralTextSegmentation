@@ -38,10 +38,12 @@ class DataHandler:
         
         #self.PROCESS_MAX_FILES = -1
         #self.PROCESS_MAX_FILES = 5000
-        self.PROCESS_MAX_FILES = 1500
+        #self.PROCESS_MAX_FILES = 1500
+        #self.PROCESS_MAX_FILES = 1000
         #self.PROCESS_MAX_FILES = 750
-        #self.PROCESS_MAX_FILES = 50
-        #self.PROCESS_MAX_FILES = 20
+        #self.PROCESS_MAX_FILES = 200
+        self.PROCESS_MAX_FILES = 50
+        self.PROCESS_MAX_FILES = 20
         #self.PROCESS_MAX_FILES = 10
 
         ################## VARIABLES ###################
@@ -189,45 +191,45 @@ class DataHandler:
         new_docs = [doc for doc in self.documents if doc[0] in best_docs]
         return new_docs
 
-    def get_sequence_samples_PARALLEL(self):
-        """ Type2 samples, parallel
-        """
-        print "Going PARALLEL!"
-        SAMPLE_TYPE = 2
-        files = [self.WIKI_DOCS+fil for fil in os.listdir(self.WIKI_DOCS)]
-        if self.PROCESS_MAX_FILES != -1:
-            files = files[:self.PROCESS_MAX_FILES]
-            print "NOTE: Processing %d files and breaking" %(self.PROCESS_MAX_FILES)
-        else:
-            print "NOTE: Processing a total of %d files" %(self.PROCESS_MAX_FILES)
-
-        processes = []
-        PARALLEL_PROCESSES = 5
-        _out_queue = Queue()
-        chunk = [files[i::PARALLEL_PROCESSES] for i in xrange(PARALLEL_PROCESSES) ]
-        #assert(sum([len(chk) for chk in chunk]), len(files))
-
-        procs = []
-        for i in range(PARALLEL_PROCESSES):
-            p = Process(
-                    target=self._create_structured_document_PARALLEL,
-                    args=(chunk[i],
-                          _out_queue))
-            procs.append(p)
-
-        # Update the documents
-        for i in range(PARALLEL_PROCESSES):
-            self.documents += _out_queue.get()
-
-        # Wait for all worker processes to finish
-        for p in procs:
-            p.join()
-        print "Pool Ended!"
-        logging.debug('Total documents: %d', len(self.documents))
-
-        self.documents = self.filter_docs()
-        sequence_samples = self.sample_creator.create_sequence_samples(self.documents)
-        return SAMPLE_TYPE, sequence_samples
+#    def get_sequence_samples_PARALLEL(self):
+#        """ Type2 samples, parallel
+#        """
+#        print "Going PARALLEL!"
+#        SAMPLE_TYPE = 2
+#        files = [self.WIKI_DOCS+fil for fil in os.listdir(self.WIKI_DOCS)]
+#        if self.PROCESS_MAX_FILES != -1:
+#            files = files[:self.PROCESS_MAX_FILES]
+#            print "NOTE: Processing %d files and breaking" %(self.PROCESS_MAX_FILES)
+#        else:
+#            print "NOTE: Processing a total of %d files" %(self.PROCESS_MAX_FILES)
+#
+#        processes = []
+#        PARALLEL_PROCESSES = 5
+#        _out_queue = Queue()
+#        chunk = [files[i::PARALLEL_PROCESSES] for i in xrange(PARALLEL_PROCESSES) ]
+#        #assert(sum([len(chk) for chk in chunk]), len(files))
+#
+#        procs = []
+#        for i in range(PARALLEL_PROCESSES):
+#            p = Process(
+#                    target=self._create_structured_document_PARALLEL,
+#                    args=(chunk[i],
+#                          _out_queue))
+#            procs.append(p)
+#
+#        # Update the documents
+#        for i in range(PARALLEL_PROCESSES):
+#            self.documents += _out_queue.get()
+#
+#        # Wait for all worker processes to finish
+#        for p in procs:
+#            p.join()
+#        print "Pool Ended!"
+#        logging.debug('Total documents: %d', len(self.documents))
+#
+#        self.documents = self.filter_docs()
+#        sequence_samples = self.sample_creator.create_sequence_samples(self.documents)
+#        return SAMPLE_TYPE, sequence_samples
 
     def get_sequence_samples(self, sample_type):
         """ Type2 samples

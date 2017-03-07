@@ -1,6 +1,9 @@
 import numpy as np
 import theano.tensor as T
 import pdb
+from keras.models import model_from_json
+from tabulate import tabulate
+
 
 
 def unison_shuffled_copies(a, b):
@@ -18,15 +21,26 @@ def unison_shuffled_copies(a, b):
 def round(arr):
     return np.round(np.array(arr, dtype=np.float64))
 
-def windiff_metric_NUMPY(y_true, y_pred, win_size=10, rounded=True):
+def compute_avg_seg_len(y_true):
+    idx = np.where(y_true == 1)[0]
+    seg_size, seg_count = 0.0, idx.shape[0]
+    for i in range(seg_count):
+        if i == seg_count - 1:
+            seg_size += y_true.shape[0] - idx[i]
+        else:
+            seg_size += idx[i+1] - idx[i]
+    return seg_size/seg_count
+
+
+def windiff_metric_ONE_SEQUENCE(y_true, y_pred, win_size=-1, rounded=True, print_individual_stats=True):
     """ Make sure Y_pred is ROUNDED
     """
     if win_size == -1:
-        window_sizes = [9,11,13,15,17,19,21,23,25,27,28,29,31]
+        window_sizes = [3,5,7,9,11,13,15,17,19,21,23,25,27,28,29,31]
     else:
         window_sizes = [win_size]
 
-    print "Window Size:", window_sizes
+    #print "Window Size:", window_sizes
 
     #####################################################
     # Remove the padded elements before calculating the
@@ -34,36 +48,68 @@ def windiff_metric_NUMPY(y_true, y_pred, win_size=10, rounded=True):
     #####################################################
 
     metric_outputs = []
-    for window_size in window_sizes:
-        ans = []
-        for sample_T, sample_P in zip(y_true, y_pred):
-            sample_P = np.array(sample_P)
-            sample_P = sample_P.reshape((sample_P.shape[0], 1))      # Convert from (SAMPLE, 37, 1, 1) -> (SAMPLE, 37, 1)
-            if not rounded:
-                sample_P = round(sample_P)
-    
-            #print sample_T.shape, sample_P.shape
-            if window_size > sample_T.shape[0]:
-                print 'ERROR: Window Size larger then total sample length'
-                return -1
+    assert y_true.shape[0] == y_pred.shape[0]
 
-            t_cum = np.cumsum(sample_T, axis=0)
-            p_cum = np.cumsum(sample_P, axis=0)
+    print ">>>>> X:", y_true.shape
+    print "Avg Seg Length: %f | We use SEG_LEN/2 as the window size" %(compute_avg_seg_len(y_true))
+    for window_size in window_sizes:
+        ans = -1
+        lenn = y_pred.shape[0]
+        if not rounded:
+            y_pred = round(y_pred)
+    
+        if window_size <= lenn:
+            t_cum = np.cumsum(y_true, axis=0)
+            p_cum = np.cumsum(y_pred, axis=0)
             ans_list = []
-            for i in range(len(sample_T)):
+            for i in range(len(y_true)):
                 if i < window_size-1:
                     continue
                 elif i == window_size-1:
                     ans_list.append((t_cum[i] - p_cum[i]) != 0)
                 else:
                     ans_list.append(((t_cum[i]-t_cum[i-window_size]) - (p_cum[i]-p_cum[i-window_size])) != 0)
-            ans.append((np.sum(ans_list)*1.0)/(len(sample_T) - window_size))
+            ans = (np.sum(ans_list)*1.0)/(lenn - window_size)
+        else:
+            print 'ERROR: Window Size larger then total sample length'
 
         metric_outputs.append({ 'window_size': window_size,
-                                'mean': np.mean(ans),
-                                'std': np.std(ans)
+                                'windiff': ans
                                 })
+    if print_individual_stats:
+        windiff_values = [dic['windiff'] for dic in metric_outputs]
+        headers = ['****'] + ["Wind=" + str(i) for i in window_sizes]
+        print tabulate([["WinDiff values"] + windiff_values], headers=headers)
+
     return metric_outputs
+
+
+#def save_model(filename, model):
+#    # serialize model to JSON
+#    if len(filename.split(".")) > 1:
+#        print "Filename '%s' should not contain a '.'" %(filename)
+#    model_json = model.to_json()
+#    with open(filename + ".json", "w") as json_file:
+#        json_file.write(model_json)
+#
+#    # serialize weights to HDF5
+#    filename_save = filename + ".h5"
+#    model.save_weights(filename_save)
+#    print "Saved model to disk with name '%s'" %(filename_save)
+# 
+#
+#def load_model(filename): 
+#    if len(filename.split(".")) > 1:
+#        print "Filename '%s' should not contain a '.'" %(filename)
+#    # load json and create model
+#    with open(filename + ".json", 'r') as json_file:
+#        loaded_model_json = json_file.read()
+#
+#    loaded_model = model_from_json(loaded_model_json)
+#    # load weights into new model
+#    loaded_model.load_weights(filename + ".h5")
+#    print("####### Loaded model from disk!")
+#    return loaded_model
 
 
 #WINDOW_SIZE_windiff_metric = 10

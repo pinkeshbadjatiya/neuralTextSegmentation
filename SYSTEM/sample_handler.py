@@ -41,6 +41,12 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         # Y.shape = (TOTAL_SENTENCES, 1)
         ld = load_data.LoadData()
         sample_type, samples = ld.load_clinical_sequence()
+    elif sample_type == 5:
+        # type5: Biography sequence of a single sample
+        # X.shape = (1, TOTAL_SENTENCES)
+        # Y.shape = (TOTAL_SENTENCES, 1)
+        ld = load_data.LoadData()
+        sample_type, samples = ld.load_biography_sequence()
     else:
         print "NOTE: INVALID SAMPLE_TYPE!"
         return None
@@ -63,7 +69,7 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         if sample_type == 1:
             # Correct groundtruth sync problem here
             sentences, groundTruths = model.convert_sample_to_vec(sentences, groundTruths)
-        elif sample_type in (2, 3, 4):
+        elif sample_type in (2, 3, 4, 5):
             sentences, groundTruths = model.convert_sequence_sample_to_vec(sentences, groundTruths)
         else:
             print "Wrong Sample TYPE"
@@ -84,7 +90,7 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         print "NOTE: Sample type2 requires PADDING!"
 
     if pad:
-        AVERAGE_WORDS = 20
+        AVERAGE_WORDS = 15
         STATIC_PAD = 1
         if STATIC_PAD:
             max_len = AVERAGE_WORDS
