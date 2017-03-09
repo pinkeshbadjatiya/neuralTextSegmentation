@@ -21,6 +21,9 @@ import helper
 from sample_handler import get_input
 from tabulate import tabulate
 
+#from attention_lstm import AttentionLSTM
+#from attention_lstm_without_weights import Attention
+from final_attention_layer import Attention
 
 SAMPLE_TYPE_cli, X_cli, Y_cli, trained_sample_handler = None, None, None, None
 SAMPLE_TYPE_wiki, X_wiki, Y_wiki = None, None, None
@@ -39,19 +42,18 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
     # Input should be of the format (TOTAL_DOCUMENTS, TOTAL_SEQUENCES, SEQUENCE_DIM)
     # Also train using the custom trainer
 
-    # Convolution layers
-    print "Building Convolution layers"
+    print 'Build MAIN model...'
+    #pdb.set_trace()
     ngram_filters = [1, 2, 3, 4, 5]
     conv_hidden_units = [300, 300, 300, 300, 300]
     
-    print 'Build MAIN model...'
-    #pdb.set_trace()
-    left_context= Input(shape=(ONE_SIDE_CONTEXT_SIZE+1, embedding_dim), dtype='float32', name='left_context')
-    main_input = Input(shape=(1, embedding_dim), dtype='float32', name='main_input')
-    right_context = Input(shape=(ONE_SIDE_CONTEXT_SIZE+1, embedding_dim), dtype='float32', name='right_context')
+    left_context= Input(shape=(ONE_SIDE_CONTEXT_SIZE+1, embedding_dim), dtype='float32', name='left-context')
+    main_input = Input(shape=(1, embedding_dim), dtype='float32')
+    right_context = Input(shape=(ONE_SIDE_CONTEXT_SIZE+1, embedding_dim), dtype='float32')
 
-    embedding_layer = Embedding(vocab_size + 1, GLOVE_EMBEDDING_DIM, weights=[embedding_matrix], input_length=embedding_dim, init='uniform')
-    embedded_input_left, embedded_input_main, embedded_input_right = TimeDistributed(embedding_layer)(left_context), TimeDistributed(embedding_layer)(main_input), TimeDistributed(embedding_layer)(right_context)
+    context_embedder = TimeDistributed(Embedding(vocab_size + 1, GLOVE_EMBEDDING_DIM, weights=[embedding_matrix], input_length=embedding_dim, init='uniform'))
+    main_input_embedder = TimeDistributed(Embedding(vocab_size + 1, GLOVE_EMBEDDING_DIM, weights=[embedding_matrix], input_length=embedding_dim, init='uniform'))
+    embedded_input_left, embedded_input_main, embedded_input_right = context_embedder(left_context), main_input_embedder(main_input), context_embedder(right_context)
 
     convsL, convsM, convsR = [], [], []
     for n_gram, hidden_units in zip(ngram_filters, conv_hidden_units):
@@ -59,7 +61,7 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
                              filter_length=n_gram,
                              #border_mode='same',
                              border_mode='valid',
-                             activation='tanh')
+                             activation='tanh', name='Convolution-'+str(n_gram)+"gram")
         lef, mid, rig = TimeDistributed(conv_layer)(embedded_input_left), TimeDistributed(conv_layer)(embedded_input_main), TimeDistributed(conv_layer)(embedded_input_right)
         flat_L, flat_M, flat_R = TimeDistributed(Flatten())(lef), TimeDistributed(Flatten())(mid), TimeDistributed(Flatten())(rig)
         #pool = GlobalMaxPooling1D()(conv)
@@ -67,18 +69,23 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
     convoluted_left, convoluted_mid, convoluted_right = Merge(mode='concat')(convsL), Merge(mode='concat')(convsM), Merge(mode='concat')(convsR)
     CONV_DIM = sum(conv_hidden_units)
 
-    encoder_context = Bidirectional(LSTM(512, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), dropout_W=0.2, dropout_U=0.2, return_sequences=False, stateful=False), merge_mode='concat')
     flat_mid = Flatten()(convoluted_mid)
-    encode_left, encode_mid, encode_right = encoder_context(convoluted_left), Dense(1024)(flat_mid), encoder_context(convoluted_right)
-    #encode_left_drop, encode_right_drop, = Dropout(0.4)(encode_left), Dropout(0.4)(encode_right)
-    encoded_info = Merge(mode='concat')([encode_left, flat_mid, encode_right])
+    encode_mid = Dense(1024)(flat_mid)
 
-    decoded = Dense(300)(encoded_info)
-    decoded_drop = Dropout(0.4)(decoded)
+    context_encoder = Bidirectional(LSTM(512, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='mem', dropout_W=0.2, dropout_U=0.2, return_sequences=True, stateful=False), merge_mode='concat')
+    encode_left, encode_right = Attention(name='encode_left')(context_encoder(convoluted_left)), Attention(name='encode_right')(context_encoder(convoluted_right))
+    encode_left_drop, encode_mid_drop, encode_right_drop = Dropout(0.4)(encode_left), Dropout(0.4)(encode_mid), Dropout(0.4)(encode_right)
+
+    #context_encoder = Bidirectional(LSTM(512, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), dropout_W=0.2, dropout_U=0.2, return_sequences=False, stateful=False), merge_mode='concat')
+    #encode_left_drop, encode_right_drop, = Dropout(0.4)(encode_left), Dropout(0.4)(encode_right)
+    encoded_info = Merge(mode='concat', name='encode_info')([encode_left_drop, encode_mid_drop, encode_right_drop])
+
+    decoded = Dense(300, name='decoded')(encoded_info)
+    decoded_drop = Dropout(0.4, name='decoded_drop')(decoded)
     
     output = Dense(1, activation='sigmoid')(decoded_drop)
     model = Model(input=[left_context, main_input, right_context], output=output)
-    model.layers[1].trainable = False
+    model.layers[1].trainable = True
     model.compile(loss=w_binary_crossentropy, optimizer='rmsprop', metrics=['accuracy', 'recall'])
 
 
@@ -181,8 +188,14 @@ def custom_fit(X, Y, model, batch_size, train_split=0.8, epochs=10):
 
         class_weight = None
         if SCALE_LOSS_FUN:
-            classes, counts = np.unique(Y_train, return_counts=True)
-            class_weight = dict(zip(classes, counts/float(sum(counts))))
+            # Iterate as the no of sentences in each document is different
+            # so np.unique() messes up.
+            classes, counts = None, []
+            for _temp_Yi in Y_train:
+                classes, _temp_counts = np.unique(_temp_Yi, return_counts=True)
+                counts.append(_temp_counts)
+            counts = np.sum(counts, axis=0)
+            class_weight = dict(zip(classes.tolist(), counts/float(sum(counts))))
             print class_weight
 
         print 'Train...'
@@ -289,9 +302,18 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
     global X_wiki, Y_wiki, X_cli, Y_cli, X_bio, Y_bio
 
     which_model = 2
+
+    # Print Train stats
+    total_sentences, total_documents = 0, 0
+
     if which_model == 2:
-        custom_fit(X, Y, model=model, batch_size=batch_size, train_split=0, epochs=epochs)
-        #custom_fit(X, Y, model=model, batch_size=batch_size, train_split=train_split, epochs=epochs)
+        #custom_fit(X, Y, model=model, batch_size=batch_size, train_split=0, epochs=epochs)
+        custom_fit(X, Y, model=model, batch_size=batch_size, train_split=train_split, epochs=epochs)
+        
+        attn_weights = [model.get_layer("encode_left").get_weights(), model.get_layer("encode_right").get_weights()]
+        print attn_weights[0]
+        print attn_weights[1]
+        
         print "############## Clinical Data ###########"
         custom_fit(X_cli, Y_cli, model=model, batch_size=batch_size, train_split=0, epochs=-1)  # Test clinical
         print "############## Biography Data ###########"
