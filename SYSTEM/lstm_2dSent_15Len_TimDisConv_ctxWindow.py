@@ -171,6 +171,7 @@ def batch_gen_SHORT_SEQ_for_training_from_big_seq(X_with_doc, Y_with_doc, batch_
                 X_temp.resize(tuple(shpX)), Y_temp.resize(tuple(shpY))    # Resize to fit the batch size (ZEROES)
 
             X_batch.append(X_temp), Y_batch.append(Y_temp), actual_sentences_batch.append(count_sent)
+            if len(X_batch) == batch_size:
                 yield np.array(X_batch), np.asarray(Y_batch), actual_sentences_batch
                 X_batch, Y_batch, actual_sentences_batch = [], [], []
     if len(X_batch):

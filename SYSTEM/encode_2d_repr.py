@@ -24,7 +24,9 @@ class CustomSent2vec(object):
     """ Converts a sentence to a 2d representation of (AVERAGE_WORDS, EMBEDDING_DIM)
     """
     def __init__(self):
-        self.model = gensim.models.Word2Vec.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
+        print "Loading word2vec model"
+        self.model = gensim.models.KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
+        print "Model Loaded!"
         self.stopwords = set(s_words.words('english') + [w for w in string.punctuation])
         #self.vectorize = lambda x: self.model[x]
         self.dictionary = Dictionary(300, self.model)
