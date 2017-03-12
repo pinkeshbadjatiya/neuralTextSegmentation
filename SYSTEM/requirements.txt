@@ -1,4 +1,8 @@
 tabulate
 numpy
 keras
-
+sklearn
+gensim
+collections
+nltk
+theano

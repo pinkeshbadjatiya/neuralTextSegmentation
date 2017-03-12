@@ -24,6 +24,7 @@ from tabulate import tabulate
 #from attention_lstm import AttentionLSTM
 #from attention_lstm_without_weights import Attention
 from final_attention_layer import Attention
+import progbar, time
 
 SAMPLE_TYPE_cli, X_cli, Y_cli, trained_sample_handler = None, None, None, None
 SAMPLE_TYPE_wiki, X_wiki, Y_wiki = None, None, None
@@ -170,7 +171,6 @@ def batch_gen_SHORT_SEQ_for_training_from_big_seq(X_with_doc, Y_with_doc, batch_
                 X_temp.resize(tuple(shpX)), Y_temp.resize(tuple(shpY))    # Resize to fit the batch size (ZEROES)
 
             X_batch.append(X_temp), Y_batch.append(Y_temp), actual_sentences_batch.append(count_sent)
-            if len(X_batch) == batch_size:
                 yield np.array(X_batch), np.asarray(Y_batch), actual_sentences_batch
                 X_batch, Y_batch, actual_sentences_batch = [], [], []
     if len(X_batch):
@@ -178,11 +178,13 @@ def batch_gen_SHORT_SEQ_for_training_from_big_seq(X_with_doc, Y_with_doc, batch_
 
 
 
-def custom_fit(X, Y, model, batch_size, train_split=0.8, epochs=10):
+def custom_fit(X, Y, model, batch_size, total_samples=None, train_split=0.8, epochs=10):
         
     if train_split == 0:
         X_test, Y_test = X, Y
     else:
+        assert total_samples    # We need total samples while printing the progress bar, only for training
+
         # This is only for training! (If train_split =1 then only TEST)
         X_train, Y_train, X_test, Y_test = split_data(X, Y, train_split=train_split)
 
@@ -203,20 +205,22 @@ def custom_fit(X, Y, model, batch_size, train_split=0.8, epochs=10):
 
         print 'Train...'
         for epoch in range(epochs):
-            mean_tr_acc, mean_tr_loss, mean_tr_rec = [], [], []
+            batch_count, mean_tr_acc, mean_tr_loss, mean_tr_rec = 0, [], [], []
             for batch_X_left, batch_X_mid, batch_X_right, batch_Y_mid in batch_gen_consecutive_context_segments_from_big_seq(X_train, Y_train, batch_size, ONE_SIDE_CONTEXT_SIZE):
                 #print batch_X_left.shape, batch_X_mid.shape, batch_X_right.shape, batch_Y_mid.shape
-                #pdb.set_trace()
                 #batch_Y_vec = to_categorical_MULTI_DIM(batch_Y, nb_classes=2)
                 #print batch_Y.shape, batch_Y_vec.shape
                 #tr_loss, tr_acc, tr_rec = model.train_on_batch(batch_X, batch_Y_vec, class_weight=class_weight)
+                start = time.time()
                 tr_loss, tr_acc, tr_rec = model.train_on_batch([batch_X_left, batch_X_mid, batch_X_right], batch_Y_mid)
+                speed = time.time() - start
 
                 mean_tr_acc.append(tr_acc)
                 mean_tr_loss.append(tr_loss)
                 mean_tr_rec.append(tr_rec)
-                #print ">> Epoch: %d/%d" %(epoch+1, epochs)
-            #model.reset_states()
+                progbar.prog_bar(True, total_samples, epochs, batch_size, epoch, batch_count, speed=speed)
+                batch_count += 1
+            progbar.prog_bar_end()
         
             print ">> Epoch: %d/%d" %(epoch+1, epochs)
             print('accuracy training = {}'.format(np.mean(mean_tr_acc)))
@@ -317,7 +321,7 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
 
     if which_model == 2:
         #custom_fit(X, Y, model=model, batch_size=batch_size, train_split=0, epochs=epochs)
-        custom_fit(X, Y, model=model, batch_size=batch_size, train_split=train_split, epochs=epochs)
+        custom_fit(X, Y, model=model, batch_size=batch_size, total_samples=total_sentences, train_split=train_split, epochs=epochs)
         
         attn_weights = [model.get_layer("encode_left").get_weights(), model.get_layer("encode_right").get_weights()]
         print attn_weights[0]
@@ -328,30 +332,30 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
         print "############## Biography Data ###########"
         custom_fit(X_bio, Y_bio, model=model, batch_size=batch_size, train_split=0, epochs=-1)  # Test biography
 
-    elif which_modle == 1:
-        # Works for TYPE2 but check for others
-        # Both these lines work for which_model == 1
-        X_train, Y_train, X_test, Y_test = split_data(X, Y, train_split=train_split)
-        model.fit(X_train, Y_train, shuffle=False, nb_epoch=epochs, batch_size=batch_size, validation_data=(X_test, Y_test))
-    
-        # WIkipedia
-        #model.evaluate(X_test, Y_test, batch_size=batch_size)
-        #pred = model.predict(X_test)
-        #rounded = np.round(pred)
-        #result = helper.windiff_metric_NUMPY(Y_test, rounded)
-        #print result
-    
-        
-        # Clinical
-        # Temporary TRUNCATION
-        TRUNCATE_LEN = X_train.shape[1]
-        print "NOTE: Truncating the Test dataset(clinical) from %d sentences to %d sentences." %(X_cli.shape[1], TRUNCATE_LEN)
-        X_cli, Y_cli = X_cli[:,:TRUNCATE_LEN,:], Y_cli[:,:TRUNCATE_LEN,:]
-        model.evaluate(X_cli, Y_cli, batch_size=batch_size)
-        pred = model.predict(X_cli)
-        rounded = np.round(pred)
-        _, result = helper.windiff_metric_NUMPY(Y_cli, rounded, win_size=10, rounded=True)
-        print result
+#    elif which_modle == 1:
+#        # Works for TYPE2 but check for others
+#        # Both these lines work for which_model == 1
+#        X_train, Y_train, X_test, Y_test = split_data(X, Y, train_split=train_split)
+#        model.fit(X_train, Y_train, shuffle=False, nb_epoch=epochs, batch_size=batch_size, validation_data=(X_test, Y_test))
+#    
+#        # WIkipedia
+#        #model.evaluate(X_test, Y_test, batch_size=batch_size)
+#        #pred = model.predict(X_test)
+#        #rounded = np.round(pred)
+#        #result = helper.windiff_metric_NUMPY(Y_test, rounded)
+#        #print result
+#    
+#        
+#        # Clinical
+#        # Temporary TRUNCATION
+#        TRUNCATE_LEN = X_train.shape[1]
+#        print "NOTE: Truncating the Test dataset(clinical) from %d sentences to %d sentences." %(X_cli.shape[1], TRUNCATE_LEN)
+#        X_cli, Y_cli = X_cli[:,:TRUNCATE_LEN,:], Y_cli[:,:TRUNCATE_LEN,:]
+#        model.evaluate(X_cli, Y_cli, batch_size=batch_size)
+#        pred = model.predict(X_cli)
+#        rounded = np.round(pred)
+#        _, result = helper.windiff_metric_NUMPY(Y_cli, rounded, win_size=10, rounded=True)
+#        print result
 
 
     pdb.set_trace()
