@@ -58,8 +58,9 @@ class Dictionary:
         n = 0
         for k, v in self.word2id_dic.iteritems():
             try:
-                embedding[v] = self.word2vec_model[k]
-            except:
+                embedding[v] = self.word2vec[k]
+            except Exception, e:
+                print e
                 n += 1
                 pass
         print "%d embedding missed"%n

@@ -5,18 +5,17 @@ import os
 import codecs
 
 from multiprocessing import Process, Lock, Queue
-import logging
-
-logging.basicConfig(level=logging.DEBUG,
-                    format='(%(threadName)-10s) %(message)s',
-                    )
+#import logging
+#logging.basicConfig(level=logging.DEBUG,
+#                    format='(%(threadName)-10s) %(message)s',
+#                    )
 
 
 # Skip that condition if the value is -1
 MIN_SENTENCES_IN_DOCUMENT = -1
 MIN_SENTENCES_IN_SECTION = 1
 MIN_SECTIONS = 2    # Exlcuding the 1st section
-MIN_SENTENCES_IN_PARAGRAPH = 5      # Using the nltk tokenizer to get the approximate sentence count in a paragraph
+MIN_SENTENCES_IN_PARAGRAPH = -1      # Using the nltk tokenizer to get the approximate sentence count in a paragraph
 
 INPUT_VECTOR_LENGTH = 10       # Similar to K as discussed with litton
 
@@ -38,11 +37,13 @@ class DataHandler:
 
         #self.PROCESS_MAX_FILES = -1
         #self.PROCESS_MAX_FILES = 5000
-        #self.PROCESS_MAX_FILES = 1500
+        #self.PROCESS_MAX_FILES = 4400
+        #self.PROCESS_MAX_FILES = 4000
+        self.PROCESS_MAX_FILES = 1500
         #self.PROCESS_MAX_FILES = 1000
-        self.PROCESS_MAX_FILES = 750
+        #self.PROCESS_MAX_FILES = 750
         #self.PROCESS_MAX_FILES = 200
-        self.PROCESS_MAX_FILES = 50
+        #self.PROCESS_MAX_FILES = 50
         #self.PROCESS_MAX_FILES = 20
         #self.PROCESS_MAX_FILES = 10
 
@@ -54,51 +55,6 @@ class DataHandler:
         self.required_samples = []           # Samples which are actually split segments
         self.best_docs = []
         self._queue = []          # Handles the tokenised sentence in a paragraph, a temp variable
-
-
-    def _create_structured_document_PARALLEL(self, files, _queue):
-        return_documents = []
-        for file_name in files:
-            with open(file_name) as f:
-                data = f.readlines()
-
-            sections = []   # sections = [paragraph in paragraphs], where paragraph = [line in lines] after tokenizing using a tokenizer
-            docID = None
-            start_line = None
-            paragraph = []
-            for i, line in enumerate(data):
-                line = line.decode("UTF-8")
-
-                # Skip the blank lines or which have only one character.
-                if len(line.strip()) < 1:
-                    continue
-
-                lno = i + 1
-                _doc_start, _doc_end, _heading = self.REGEX_document_start.match(line), self.REGEX_document_end.match(line), self.REGEX_heading.match(line)
-                if _doc_start:
-                    if len(paragraph) > 0 or len(sections) > 0 or (docID is not None) or (start_line is not None):
-                        print "SERIOUS PROBLEM !!"
-                    paragraph, sections, docID, start_line = [], [], _doc_start.group(2), lno
-                    #print "docID: %s" % (docID)
-                elif _doc_end:
-                    # Flush old data & reset
-                    return_documents.append((docID, sections))
-                    docID, sections, paragraph, start_line = None, [], [], None
-                elif not start_line and lno == start_line + 1:   # Doc title
-                    document_id_to_title[docID] = line
-                elif _heading:
-
-                    # Do this only for the top sections as we are using the paragraphs
-                    # to learn split points
-                    if len(paragraph) == 0:
-                        continue
-
-                    sections.append(paragraph)
-                    paragraph = []
-                else:
-                    paragraph.append(self.sentence_tokenizer.tokenize(line))
-
-        _queue.put(return_documents)
 
 
     def _create_structured_documents(self, filenameS):
@@ -191,45 +147,6 @@ class DataHandler:
         new_docs = [doc for doc in self.documents if doc[0] in best_docs]
         return new_docs
 
-#    def get_sequence_samples_PARALLEL(self):
-#        """ Type2 samples, parallel
-#        """
-#        print "Going PARALLEL!"
-#        SAMPLE_TYPE = 2
-#        files = [self.WIKI_DOCS+fil for fil in os.listdir(self.WIKI_DOCS)]
-#        if self.PROCESS_MAX_FILES != -1:
-#            files = files[:self.PROCESS_MAX_FILES]
-#            print "NOTE: Processing %d files and breaking" %(self.PROCESS_MAX_FILES)
-#        else:
-#            print "NOTE: Processing a total of %d files" %(self.PROCESS_MAX_FILES)
-#
-#        processes = []
-#        PARALLEL_PROCESSES = 5
-#        _out_queue = Queue()
-#        chunk = [files[i::PARALLEL_PROCESSES] for i in xrange(PARALLEL_PROCESSES) ]
-#        #assert(sum([len(chk) for chk in chunk]), len(files))
-#
-#        procs = []
-#        for i in range(PARALLEL_PROCESSES):
-#            p = Process(
-#                    target=self._create_structured_document_PARALLEL,
-#                    args=(chunk[i],
-#                          _out_queue))
-#            procs.append(p)
-#
-#        # Update the documents
-#        for i in range(PARALLEL_PROCESSES):
-#            self.documents += _out_queue.get()
-#
-#        # Wait for all worker processes to finish
-#        for p in procs:
-#            p.join()
-#        print "Pool Ended!"
-#        logging.debug('Total documents: %d', len(self.documents))
-#
-#        self.documents = self.filter_docs()
-#        sequence_samples = self.sample_creator.create_sequence_samples(self.documents)
-#        return SAMPLE_TYPE, sequence_samples
 
     def get_sequence_samples(self, sample_type):
         """ Type2 samples
@@ -240,6 +157,7 @@ class DataHandler:
             files = files[:self.PROCESS_MAX_FILES]
             print "NOTE: Processing %d files and breaking" %(self.PROCESS_MAX_FILES)
         else:
+            self.PROCESS_MAX_FILES = len(files)
             print "NOTE: Processing a total of %d files" %(self.PROCESS_MAX_FILES)
 
         self._create_structured_documents(files)
@@ -271,7 +189,27 @@ class SampleCreator:
     def __init__(self):
         self.queue = []
         self.samples = []
+
+        #self.SPLIT_TYPE = "paragraph"             # should be in [section, paragraph]
+        self.SPLIT_TYPE = "section"             # should be in [section, paragraph]
+        assert self.SPLIT_TYPE in ["section", "paragraph"]
+        print "#### Using split type:", self.SPLIT_TYPE
+
         #self.REQUIRED_CONSECUTIVE_PARAGRAPH = 2  # For the sample, each sample is (1 paragraph, split-end, 1 paragraph)
+
+    def _get_groundtruth(self, section_idx, paragraph_idx, sentence_idx):
+        if self.SPLIT_TYPE == "section":        # if the sentence is from the 1st paragraph and its index is 0 then its groundtruth is 1.
+            if (not paragraph_idx) and (not sentence_idx):
+                return True
+        elif self.SPLIT_TYPE == "paragraph":    # if the sentence is the 1st sentence of the paragraph
+            if not sentence_idx:
+                return True
+        else:
+            print ">>>>>>>>>>>>> INVALID SPLIT TYPE <<<<<<<<<<"
+
+        # Not a split point
+        return False
+            
 
     def create_sequence_samples(self, document):
         print "Creating Samples for each document (Document is a sequence of sentences) (NOT separating as paragraph splitting)...."
@@ -279,9 +217,10 @@ class SampleCreator:
         for (docID, sections) in document:
             # Iterate over section
             queue = []
-            for section in sections:
-                for paragraph in section:
-                    queue += [(codecs.encode(sentence, "utf-8"), int(not count)) for count, sentence in enumerate(paragraph)]    # GroundTruth is 1 for the splitting sentence else 0
+            for sec_idx_in_doc, section in enumerate(sections):
+                for par_idx_in_sec, paragraph in enumerate(section):
+                    for sent_idx_in_par, sentence in enumerate(paragraph):
+                        queue.append((codecs.encode(sentence, "utf-8"), self._get_groundtruth(sec_idx_in_doc, par_idx_in_sec, sent_idx_in_par)))
                     ###########################################################
                     #####     Encoding is shit! (but it is nice :D)     #######
                     #####     It is more complicated then you think     #######
@@ -291,11 +230,13 @@ class SampleCreator:
 
     def create_samples(self, document):
         print "Creating Samples...."
+
         for (docID, sections) in document:
             # Iterate over section
-            for section in sections:
-                for paragraph in section:
-                    self.queue += [(codecs.encode(sentence, "utf-8"), int(not count)) for count, sentence in enumerate(paragraph)]    # GroundTruth is 1 for the splitting sentence else 0
+            for sec_idx_in_doc, section in enumerate(sections):
+                for par_idx_in_sec, paragraph in enumerate(section):
+                    for sent_idx_in_par, sentence in enumerate(paragraph):
+                        self.queue.append((codecs.encode(sentence, "utf-8"), self._get_groundtruth(sec_idx_in_doc, par_idx_in_sec, sent_idx_in_par)))
                     ###########################################################
                     #####     Encoding is shit! (but it is nice :D)     #######
                     #####     It is more complicated then you think     #######

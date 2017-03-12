@@ -32,7 +32,7 @@ GLOVE_EMBEDDING_DIM = 300
 SCALE_LOSS_FUN = True
 
 SEQUENCES_LENGTH_FOR_TRAINING = 40
-ONE_SIDE_CONTEXT_SIZE = 5
+ONE_SIDE_CONTEXT_SIZE = 10
 
 def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, vocab_size):
 
@@ -44,8 +44,8 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
 
     print 'Build MAIN model...'
     #pdb.set_trace()
-    ngram_filters = [1, 2, 3, 4, 5]
-    conv_hidden_units = [300, 300, 300, 300, 300]
+    ngram_filters = [1, 2, 3, 4]
+    conv_hidden_units = [200, 200, 200, 200]
     
     left_context= Input(shape=(ONE_SIDE_CONTEXT_SIZE+1, embedding_dim), dtype='float32', name='left-context')
     main_input = Input(shape=(1, embedding_dim), dtype='float32')
@@ -70,9 +70,9 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
     CONV_DIM = sum(conv_hidden_units)
 
     flat_mid = Flatten()(convoluted_mid)
-    encode_mid = Dense(1024)(flat_mid)
+    encode_mid = Dense(512)(flat_mid)
 
-    context_encoder = Bidirectional(LSTM(512, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='mem', dropout_W=0.2, dropout_U=0.2, return_sequences=True, stateful=False), merge_mode='concat')
+    context_encoder = Bidirectional(LSTM(512, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.2, dropout_U=0.2, return_sequences=True, stateful=False), merge_mode='concat')
     encode_left, encode_right = Attention(name='encode_left')(context_encoder(convoluted_left)), Attention(name='encode_right')(context_encoder(convoluted_right))
     encode_left_drop, encode_mid_drop, encode_right_drop = Dropout(0.4)(encode_left), Dropout(0.4)(encode_mid), Dropout(0.4)(encode_right)
 
@@ -80,12 +80,12 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
     #encode_left_drop, encode_right_drop, = Dropout(0.4)(encode_left), Dropout(0.4)(encode_right)
     encoded_info = Merge(mode='concat', name='encode_info')([encode_left_drop, encode_mid_drop, encode_right_drop])
 
-    decoded = Dense(300, name='decoded')(encoded_info)
+    decoded = Dense(600, name='decoded')(encoded_info)
     decoded_drop = Dropout(0.4, name='decoded_drop')(decoded)
     
     output = Dense(1, activation='sigmoid')(decoded_drop)
     model = Model(input=[left_context, main_input, right_context], output=output)
-    model.layers[1].trainable = True
+    model.layers[1].trainable = False
     model.compile(loss=w_binary_crossentropy, optimizer='rmsprop', metrics=['accuracy', 'recall'])
 
 
@@ -108,7 +108,7 @@ def batch_gen_consecutive_context_segments_from_big_seq(X_with_doc, Y_with_doc, 
             context_mat_size = one_side_context_size + 1
 
             if total_seq < 2*one_side_context_size + 1:
-                print "Too Small sequence"
+                #print "Too Small sequence: Found %d, required %d" %(total_seq, 2*one_side_context_size+1)
                 continue
 
             # Check if padding for the one_side_context_size required for both LEFT & RIGHT
@@ -198,6 +198,9 @@ def custom_fit(X, Y, model, batch_size, train_split=0.8, epochs=10):
             class_weight = dict(zip(classes.tolist(), counts/float(sum(counts))))
             print class_weight
 
+        train_avg_seg_len = np.mean([helper.compute_avg_seg_len(Yi) for Yi in Y_train], axis=0)
+        print ">> Train AVG_SEGMENT_LENGTH:", train_avg_seg_len
+
         print 'Train...'
         for epoch in range(epochs):
             mean_tr_acc, mean_tr_loss, mean_tr_rec = [], [], []
@@ -244,6 +247,7 @@ def custom_fit(X, Y, model, batch_size, train_split=0.8, epochs=10):
     print("Predicting... (SEPARATELY FOR EACH DOCUMENT)")
     predictions = defaultdict(list) # Key is the windiff size while values are the values of various documents
     skipped_docs = defaultdict(int)
+    avg_segment_lengths_across_test_data = [] # Average segment length across the documents
     for Xi_test, Yi_test in zip(X_test, Y_test):
         pred_per_doc = []
         Xi_test, Yi_test = Xi_test.reshape((1,) + Xi_test.shape), Yi_test.reshape((1,) + Yi_test.shape)   # Convert to format of 1 document
@@ -257,7 +261,8 @@ def custom_fit(X, Y, model, batch_size, train_split=0.8, epochs=10):
 
         #rounded = np.round(pred_per_doc)
         pred_per_doc = np.concatenate(pred_per_doc, axis=0)
-        result = helper.windiff_metric_ONE_SEQUENCE(Yi_test[0], pred_per_doc, win_size=-1, rounded=False, print_individual_stats=True)
+        actual_avg_seg_length, result = helper.windiff_metric_ONE_SEQUENCE(Yi_test[0], pred_per_doc, win_size=-1, rounded=False, print_individual_stats=True)
+        avg_segment_lengths_across_test_data.append(actual_avg_seg_length)
         for res in result:
             if res['windiff'] != -1:    # Skip if the value returned -1 as it meant not valid size of window
                 predictions[res['window_size']].append(res['windiff'])
@@ -265,6 +270,7 @@ def custom_fit(X, Y, model, batch_size, train_split=0.8, epochs=10):
                 skipped_docs[res['window_size']] += 1
 
     print ">> Summary:"
+    print "AVG segment length in test data:", np.mean(avg_segment_lengths_across_test_data)
     headers = ["WindowSize", "SkippedDocs/TotalDocs", "Mean", "Std", "Min", "Max"]
     print_values = []
     for window_size in predictions:
@@ -305,6 +311,9 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
 
     # Print Train stats
     total_sentences, total_documents = 0, 0
+    total_documents = X.shape[0]
+    total_sentences = sum([doc.shape[0] for doc in X])
+    print "X-wiki TRAIN stats: Total %d sentences in %d documents" %(total_sentences, total_documents)
 
     if which_model == 2:
         #custom_fit(X, Y, model=model, batch_size=batch_size, train_split=0, epochs=epochs)
@@ -341,7 +350,7 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
         model.evaluate(X_cli, Y_cli, batch_size=batch_size)
         pred = model.predict(X_cli)
         rounded = np.round(pred)
-        result = helper.windiff_metric_NUMPY(Y_cli, rounded, win_size=10, rounded=True)
+        _, result = helper.windiff_metric_NUMPY(Y_cli, rounded, win_size=10, rounded=True)
         print result
 
 
@@ -367,6 +376,9 @@ if __name__ == "__main__":
     dictionary_object = trained_sample_handler.dictionary
     embedding_W = dictionary_object.get_embedding_weights()
 
+    print "#####################################################################"
+    print "VOCAB_SIZE:",  len(dictionary_object.word2id_dic)
+    print "#####################################################################"
     model = lstm_model(SEQUENCES_LENGTH_FOR_TRAINING, EMBEDDING_DIM, embedding_W, len(dictionary_object.word2id_dic))
-    train_LSTM(X_wiki, Y_wiki, model, embedding_W, train_split=0.7, epochs=5, batch_size=64)
+    train_LSTM(X_wiki, Y_wiki, model, embedding_W, train_split=0.7, epochs=10, batch_size=50)
     #train_LSTM(X_bio, Y_bio, model, embedding_W, train_split=0.7, epochs=1, batch_size=32)

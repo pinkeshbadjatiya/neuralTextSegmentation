@@ -17,6 +17,9 @@ from parse_xml import INPUT_VECTOR_LENGTH
 import time
 import load_data
 
+AVERAGE_WORDS = 20
+STATIC_PAD = 1
+
 def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
     # Returns X, Y
     # X: Each row is a sample
@@ -90,8 +93,6 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         print "NOTE: Sample type2 requires PADDING!"
 
     if pad:
-        AVERAGE_WORDS = 15
-        STATIC_PAD = 1
         if STATIC_PAD:
             max_len = AVERAGE_WORDS
         else:

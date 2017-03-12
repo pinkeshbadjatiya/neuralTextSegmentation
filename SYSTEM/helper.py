@@ -23,13 +23,13 @@ def round(arr):
 
 def compute_avg_seg_len(y_true):
     idx = np.where(y_true == 1)[0]
-    seg_size, seg_count = 0.0, idx.shape[0]
+    seg_sizes, seg_count = [], idx.shape[0]
     for i in range(seg_count):
         if i == seg_count - 1:
-            seg_size += y_true.shape[0] - idx[i]
+            seg_sizes.append(y_true.shape[0] - idx[i])
         else:
-            seg_size += idx[i+1] - idx[i]
-    return seg_size/seg_count
+            seg_sizes.append(idx[i+1] - idx[i])
+    return np.mean(seg_sizes)
 
 
 def windiff_metric_ONE_SEQUENCE(y_true, y_pred, win_size=-1, rounded=True, print_individual_stats=True):
@@ -51,7 +51,9 @@ def windiff_metric_ONE_SEQUENCE(y_true, y_pred, win_size=-1, rounded=True, print
     assert y_true.shape[0] == y_pred.shape[0]
 
     print ">>>>> X:", y_true.shape
-    print "Avg Seg Length: %f | We use SEG_LEN/2 as the window size" %(compute_avg_seg_len(y_true))
+    actual_seg_length = compute_avg_seg_len(y_true)
+    print "Avg Seg Length: %f | We use SEG_LEN/2 as the window size" %(actual_seg_length)
+
     for window_size in window_sizes:
         ans = -1
         lenn = y_pred.shape[0]
@@ -81,7 +83,7 @@ def windiff_metric_ONE_SEQUENCE(y_true, y_pred, win_size=-1, rounded=True, print
         headers = ['****'] + ["Wind=" + str(i) for i in window_sizes]
         print tabulate([["WinDiff values"] + windiff_values], headers=headers)
 
-    return metric_outputs
+    return actual_seg_length, metric_outputs
 
 
 #def save_model(filename, model):
