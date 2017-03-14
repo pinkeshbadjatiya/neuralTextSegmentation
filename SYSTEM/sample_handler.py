@@ -16,6 +16,7 @@ from parse_xml import INPUT_VECTOR_LENGTH
 
 import time
 import load_data
+import progbar
 
 AVERAGE_WORDS = 20
 STATIC_PAD = 1
@@ -26,7 +27,7 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
     # Y: A 1-D vector for ground truth
     # Also pads the sample input as per the mentioned value of INPUT_VECTOR_LENGTH is needed
 
-    start = time.clock()
+    start = time.time()
     data_handler = DataHandler()
 
     if sample_type == 1:
@@ -55,7 +56,7 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         return None
 
     del data_handler
-    print "Samples Loading took", time.clock() - start, "seconds"
+    print "Samples Loading took", time.time() - start, "seconds"
 
     model = trained_sent2vec_model
     if not trained_sent2vec_model:
@@ -64,10 +65,14 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         model = CustomSent2vec()
 
     X, Y = [], []
-    for sample in samples:
+    _total_samples,_start_time = len(samples), time.time()
+    for _idx, sample in enumerate(samples):
         # Each sample is a document
         # Each sample is a list of tuples with each tuple as (sentence, groundTruth)
         sentences, groundTruths = zip(*sample)        # Unpack a sample
+
+        if _idx % 50:
+            progbar.simple_update("Converting doc to martices", _idx+1, _total_samples, time_elapsed=(time.time() - _start_time))
 
         if sample_type == 1:
             # Correct groundtruth sync problem here
@@ -81,7 +86,9 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
             continue
         X.append(sentences)            # X[0].shape = matrix([[1,2,3,4.....]])
         Y.append(np.asarray(groundTruths))          # Y[0] = [1, 0, 0, ..... 0, 1, 0, 1....]
+    progbar.simple_update("Creating a standalone matrix for samples...", -1, -1)
     X, Y = np.asarray(X), np.asarray(Y)
+    progbar.end()
     
 
     print "Total samples: %d" %(len(X))

@@ -25,7 +25,8 @@ class CustomSent2vec(object):
     """
     def __init__(self):
         print "Loading word2vec model"
-        self.model = gensim.models.KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
+        #self.model = gensim.models.KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
+        self.model = gensim.models.Word2Vec.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
         print "Model Loaded!"
         self.stopwords = set(s_words.words('english') + [w for w in string.punctuation])
         #self.vectorize = lambda x: self.model[x]

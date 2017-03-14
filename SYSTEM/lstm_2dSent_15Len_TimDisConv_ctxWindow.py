@@ -221,7 +221,7 @@ def custom_fit(X, Y, model, batch_size, total_samples=None, train_split=0.8, epo
                 mean_tr_rec.append(tr_rec)
                 progbar.prog_bar(True, total_samples, epochs, batch_size, epoch, batch_count, speed=speed)
                 batch_count += 1
-            progbar.prog_bar_end()
+            progbar.end()
         
             print ">> Epoch: %d/%d" %(epoch+1, epochs)
             print('accuracy training = {}'.format(np.mean(mean_tr_acc)))

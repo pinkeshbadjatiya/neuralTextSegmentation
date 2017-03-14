@@ -28,7 +28,7 @@ class DataHandler:
         self.REGEX_document_start = re.compile(r'<doc *(id="([0-9]{1,})")? *(url=".*")? *(title=".*")?>')
         self.REGEX_document_end = re.compile(r'</doc>')
 
-        self.WIKI_DOCS = "/home/pinkesh/extracted_WIKIPEDIA/"
+        self.WIKI_DOCS = "/home/pinkesh/DATASETS/WIKIPEDIA_DATASET/extracted_WIKIPEDIA/"
         if self.WIKI_DOCS[-1]!="/":
             raise Exception("Check the directory name")
 
