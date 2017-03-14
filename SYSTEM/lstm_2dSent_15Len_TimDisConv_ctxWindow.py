@@ -206,8 +206,9 @@ def custom_fit(X, Y, model, batch_size, total_samples=None, train_split=0.8, epo
 
         print 'Train...'
         for epoch in range(epochs):
-            batch_count, mean_tr_acc, mean_tr_loss, mean_tr_rec = 0, [], [], []
-            for batch_X_left, batch_X_mid, batch_X_right, batch_Y_mid in batch_gen_consecutive_context_segments_from_big_seq(X_train, Y_train, batch_size, ONE_SIDE_CONTEXT_SIZE):
+            mean_tr_acc, mean_tr_loss, mean_tr_rec = [], [], []
+            rLoss, rRecall, rAcc = 0,0,0 # Running parameters for printing while training
+            for batch_count, (batch_X_left, batch_X_mid, batch_X_right, batch_Y_mid) in enumerate(batch_gen_consecutive_context_segments_from_big_seq(X_train, Y_train, batch_size, ONE_SIDE_CONTEXT_SIZE)):
                 #print batch_X_left.shape, batch_X_mid.shape, batch_X_right.shape, batch_Y_mid.shape
                 #batch_Y_vec = to_categorical_MULTI_DIM(batch_Y, nb_classes=2)
                 #print batch_Y.shape, batch_Y_vec.shape
@@ -219,8 +220,9 @@ def custom_fit(X, Y, model, batch_size, total_samples=None, train_split=0.8, epo
                 mean_tr_acc.append(tr_acc)
                 mean_tr_loss.append(tr_loss)
                 mean_tr_rec.append(tr_rec)
-                progbar.prog_bar(True, total_samples, epochs, batch_size, epoch, batch_count, speed=speed)
-                batch_count += 1
+                #rLoss, rRecall, rAcc = (rLoss*batch_count + tr_loss)/(batch_count + 1), (rRecall*batch_count + tr_rec)/(batch_count + 1), (rAcc*batch_count + tr_acc)/(batch_count + 1)
+                #progbar.prog_bar(True, total_samples, epochs, batch_size, epoch, batch_count, speed=speed, data={ 'rLoss': rLoss, 'rAcc': rAcc, 'rRec': rRecall })
+                progbar.prog_bar(True, total_samples, epochs, batch_size, epoch, batch_count, speed=speed, data={ 'Loss': tr_loss, 'Acc': tr_acc, 'Rec': tr_rec })
             progbar.end()
         
             print ">> Epoch: %d/%d" %(epoch+1, epochs)
