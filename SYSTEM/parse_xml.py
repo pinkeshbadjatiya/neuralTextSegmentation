@@ -28,7 +28,8 @@ class DataHandler:
         self.REGEX_document_start = re.compile(r'<doc *(id="([0-9]{1,})")? *(url=".*")? *(title=".*")?>')
         self.REGEX_document_end = re.compile(r'</doc>')
 
-        self.WIKI_DOCS = "/home/pinkesh/DATASETS/WIKIPEDIA_DATASET/extracted_WIKIPEDIA/"
+        #self.WIKI_DOCS = "/home/pinkesh/DATASETS/WIKIPEDIA_DATASET/extracted_WIKIPEDIA/"
+        self.WIKI_DOCS = "/home/rahulnht/PINKESH_work/extracted_WIKIPEDIA/"
         if self.WIKI_DOCS[-1]!="/":
             raise Exception("Check the directory name")
 
@@ -39,12 +40,12 @@ class DataHandler:
         #self.PROCESS_MAX_FILES = 5000
         #self.PROCESS_MAX_FILES = 4400
         #self.PROCESS_MAX_FILES = 4000
-        #self.PROCESS_MAX_FILES = 1500
+        self.PROCESS_MAX_FILES = 1500
         #self.PROCESS_MAX_FILES = 1000
         #self.PROCESS_MAX_FILES = 750
         #self.PROCESS_MAX_FILES = 200
         #self.PROCESS_MAX_FILES = 50
-        self.PROCESS_MAX_FILES = 20
+        #self.PROCESS_MAX_FILES = 20
         #self.PROCESS_MAX_FILES = 10
 
         ################## VARIABLES ###################

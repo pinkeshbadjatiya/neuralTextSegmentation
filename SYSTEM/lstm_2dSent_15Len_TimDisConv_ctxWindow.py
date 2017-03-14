@@ -394,5 +394,5 @@ if __name__ == "__main__":
     print "VOCAB_SIZE:",  len(dictionary_object.word2id_dic)
     print "#####################################################################"
     model = lstm_model(SEQUENCES_LENGTH_FOR_TRAINING, EMBEDDING_DIM, embedding_W, len(dictionary_object.word2id_dic))
-    train_LSTM(X_wiki, Y_wiki, model, embedding_W, train_split=0.7, epochs=10, batch_size=50)
+    train_LSTM(X_wiki, Y_wiki, model, embedding_W, train_split=0.7, epochs=10, batch_size=60)
     #train_LSTM(X_bio, Y_bio, model, embedding_W, train_split=0.7, epochs=1, batch_size=32)
