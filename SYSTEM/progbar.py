@@ -11,12 +11,12 @@ def simple_update(prefix, count, total, speed=None, time_elapsed=None):
     # Should be called before running the timing code, as it is PRIOR printing on screen
     # Also, count is not 0 indexed. So it should be 1-indexed
     time_remaining = -1
-    if not speed:
+    if speed:
         time_remaining = 1.0*(total - count + 1)*speed
-    else not time_elapsed:
+    elif time_elapsed and count>1:  # since when count=1, we have not done anything.
         time_remaining = (1.0*(total - count + 1)*time_elapsed)/(count - 1)
 
-    time_remaining = str(datetime.timedelta(seconds=time_remaining)) if time_remaining != -1 else "---"
+    time_remaining = str(datetime.timedelta(seconds=int(time_remaining))) if time_remaining != -1 else "---"
 
     sys.stdout.write('\r')
     if count == -1 or total == -1:

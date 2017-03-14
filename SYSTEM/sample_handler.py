@@ -71,7 +71,7 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         # Each sample is a list of tuples with each tuple as (sentence, groundTruth)
         sentences, groundTruths = zip(*sample)        # Unpack a sample
 
-        if _idx % 50:
+        if not _idx%50:
             progbar.simple_update("Converting doc to martices", _idx+1, _total_samples, time_elapsed=(time.time() - _start_time))
 
         if sample_type == 1:
