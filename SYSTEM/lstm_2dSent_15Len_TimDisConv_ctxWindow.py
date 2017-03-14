@@ -213,9 +213,15 @@ def custom_fit(X, Y, model, batch_size, total_samples=None, train_split=0.8, epo
                 #batch_Y_vec = to_categorical_MULTI_DIM(batch_Y, nb_classes=2)
                 #print batch_Y.shape, batch_Y_vec.shape
                 #tr_loss, tr_acc, tr_rec = model.train_on_batch(batch_X, batch_Y_vec, class_weight=class_weight)
-                start = time.time()
-                tr_loss, tr_acc, tr_rec = model.train_on_batch([batch_X_left, batch_X_mid, batch_X_right], batch_Y_mid)
-                speed = time.time() - start
+                try:
+                    start = time.time()
+                    tr_loss, tr_acc, tr_rec = model.train_on_batch([batch_X_left, batch_X_mid, batch_X_right], batch_Y_mid)
+                    speed = time.time() - start
+                except KeyboardInterrupt, SystemExit:
+                    print "########################################################"
+                    print "######  Pausing execution. Press ENTER to continue #####"
+                    print "########################################################"
+                    raw_input()
 
                 mean_tr_acc.append(tr_acc)
                 mean_tr_loss.append(tr_loss)
@@ -223,6 +229,7 @@ def custom_fit(X, Y, model, batch_size, total_samples=None, train_split=0.8, epo
                 #rLoss, rRecall, rAcc = (rLoss*batch_count + tr_loss)/(batch_count + 1), (rRecall*batch_count + tr_rec)/(batch_count + 1), (rAcc*batch_count + tr_acc)/(batch_count + 1)
                 #progbar.prog_bar(True, total_samples, epochs, batch_size, epoch, batch_count, speed=speed, data={ 'rLoss': rLoss, 'rAcc': rAcc, 'rRec': rRecall })
                 progbar.prog_bar(True, total_samples, epochs, batch_size, epoch, batch_count, speed=speed, data={ 'Loss': tr_loss, 'Acc': tr_acc, 'Rec': tr_rec })
+            model.save("model_trainable_FALSE_epoc_%d.h5" %(epoch))
             progbar.end()
         
             print ">> Epoch: %d/%d" %(epoch+1, epochs)

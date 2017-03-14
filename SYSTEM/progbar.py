@@ -36,7 +36,7 @@ def prog_bar(EVERYTHING_ZERO_INDEXED, total_samples, total_epochs, batch_size, e
     sys.stdout.write('\r')
     sys.stdout.write("[%-60s] %d%%" % ('='*((60*(batch_count+1))/total_batches), (100*(batch_count+1))/total_batches))
     sys.stdout.flush()
-    sys.stdout.write(", epoch %d/%d, BatchSize: %d sents, Batch: %d/%d, Speed: %0.2f secs/batch, TimeRemain: %s || %s"% (epoch+1, total_epochs, batch_size, batch_count+1, total_batches, speed, str(datetime.timedelta(seconds=int(speed*(total_batches - (batch_count+1))))), data_string))
+    sys.stdout.write(", Epoc %d/%d, BatchSz: %d sents, Batch: %d/%d, Speed: %0.2f secs/batch, TimeRemain: %s || %s"% (epoch+1, total_epochs, batch_size, batch_count+1, total_batches, speed, str(datetime.timedelta(seconds=int(speed*(total_batches - (batch_count+1))))), data_string))
     sys.stdout.flush()
 
 
