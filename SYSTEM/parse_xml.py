@@ -12,12 +12,12 @@ from multiprocessing import Process, Lock, Queue
 
 
 # Skip that condition if the value is -1
-MIN_SENTENCES_IN_DOCUMENT = -1
+MIN_SENTENCES_IN_DOCUMENT = 21  # currently equal to 2*context + 1
 MIN_SENTENCES_IN_SECTION = 1
 MIN_SECTIONS = 2    # Exlcuding the 1st section
 MIN_SENTENCES_IN_PARAGRAPH = -1      # Using the nltk tokenizer to get the approximate sentence count in a paragraph
 
-INPUT_VECTOR_LENGTH = 10       # Similar to K as discussed with litton
+INPUT_VECTOR_LENGTH = 10       # Similar to K as discussed with litton, not required if fetching document as a single sequence
 
 
 
@@ -40,13 +40,14 @@ class DataHandler:
         #self.PROCESS_MAX_FILES = 5000
         #self.PROCESS_MAX_FILES = 4400
         #self.PROCESS_MAX_FILES = 4000
-        self.PROCESS_MAX_FILES = 1500
-        #self.PROCESS_MAX_FILES = 1000
-        #self.PROCESS_MAX_FILES = 750
+        #self.PROCESS_MAX_FILES = 1500
+        #self.PROCESS_MAX_FILES = 900
+        #self.PROCESS_MAX_FILES = 800
         #self.PROCESS_MAX_FILES = 200
         #self.PROCESS_MAX_FILES = 50
         #self.PROCESS_MAX_FILES = 20
         #self.PROCESS_MAX_FILES = 10
+        self.PROCESS_MAX_FILES = 5
 
         ################## VARIABLES ###################
         self.document_id_to_title = {}  # Map for the document ID's
@@ -57,6 +58,8 @@ class DataHandler:
         self.best_docs = []
         self._queue = []          # Handles the tokenised sentence in a paragraph, a temp variable
 
+        # Print var status
+        print "==== MIN_SENTENCES_IN_DOCUMENT: %d, MIN_SENTENCES_IN_SECTION: %d, MIN_SECTIONS(excluding 1st): %d, MIN_SENTENCES_IN_PARAGRAPH: %d ===" %(MIN_SENTENCES_IN_DOCUMENT, MIN_SENTENCES_IN_SECTION, MIN_SECTIONS, MIN_SENTENCES_IN_PARAGRAPH)
 
     def _create_structured_documents(self, filenameS):
         # Read all data in one Go

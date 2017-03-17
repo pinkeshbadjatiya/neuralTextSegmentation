@@ -1,4 +1,5 @@
 from keras.models import Sequential, Model
+from keras.models import load_model
 from keras.layers import Activation, Dense, Dropout, Embedding, Flatten, RepeatVector, Input, Merge, merge, Convolution1D, Convolution2D, MaxPooling1D, GlobalMaxPooling1D, LSTM, Bidirectional
 from keras.layers.wrappers import TimeDistributed
 from keras.optimizers import SGD
@@ -32,8 +33,28 @@ SAMPLE_TYPE_bio, X_bio, Y_bio = None, None, None
 GLOVE_EMBEDDING_DIM = 300
 SCALE_LOSS_FUN = True
 
-SEQUENCES_LENGTH_FOR_TRAINING = 40
+# SEQUENCES_LENGTH_FOR_TRAINING = 40
+
 ONE_SIDE_CONTEXT_SIZE = 10
+
+LOAD_SAVED_MODEL_AND_CONTINUE_TRAIN = False
+saved_model_epoch_done = None
+
+
+np.random.seed(12345)   # IMP seed
+
+def load_saved_model():
+    global saved_model_epoch_done
+    print "====== Loading the saved model ======="
+    filename = sys.argv[1]
+    epoch_done = filename.split(".")[0].split("_")[-1]
+    print ">>> Continuing from epoch %d <<<<" %(int(epoch_done)+1)
+    saved_model_epoch_done = int(epoch_done)
+
+    model = load_model(filename)
+    return model
+        
+
 
 def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, vocab_size):
 
@@ -109,7 +130,7 @@ def batch_gen_consecutive_context_segments_from_big_seq(X_with_doc, Y_with_doc, 
             context_mat_size = one_side_context_size + 1
 
             if total_seq < 2*one_side_context_size + 1:
-                #print "Too Small sequence: Found %d, required %d" %(total_seq, 2*one_side_context_size+1)
+                print "Too Small sequence: Found %d, required %d" %(total_seq, 2*one_side_context_size+1)
                 continue
 
             # Check if padding for the one_side_context_size required for both LEFT & RIGHT
@@ -178,16 +199,54 @@ def batch_gen_SHORT_SEQ_for_training_from_big_seq(X_with_doc, Y_with_doc, batch_
         yield np.asarray(X_batch), np.asarray(Y_batch), actual_sentences_batch
 
 
+def test_during_train(X_test, Y_test, model, batch_size):
+    # Predicting
+    print("Predicting... (SEPARATELY FOR EACH DOCUMENT)")
+    predictions = defaultdict(list) # Key is the windiff size while values are the values of various documents
+    skipped_docs = defaultdict(int)
+    avg_segment_lengths_across_test_data = [] # Average segment length across the documents
+    for Xi_test, Yi_test in zip(X_test, Y_test):
+        pred_per_doc = []
+        Xi_test, Yi_test = Xi_test.reshape((1,) + Xi_test.shape), Yi_test.reshape((1,) + Yi_test.shape)   # Convert to format of 1 document
+        for batch_X_left, batch_X_mid, batch_X_right, batch_Y_mid in batch_gen_consecutive_context_segments_from_big_seq(Xi_test, Yi_test, batch_size, ONE_SIDE_CONTEXT_SIZE):
+            batch_y_pred = model.predict_on_batch([batch_X_left, batch_X_mid, batch_X_right])
+            pred_per_doc.append(batch_y_pred)
 
-def custom_fit(X, Y, model, batch_size, total_samples=None, train_split=0.8, epochs=10):
+        #rounded = np.round(pred_per_doc)
+        pred_per_doc = np.concatenate(pred_per_doc, axis=0)
+        actual_avg_seg_length, result = helper.windiff_metric_ONE_SEQUENCE(Yi_test[0], pred_per_doc, win_size=-1, rounded=False, print_individual_stats=True)
+        avg_segment_lengths_across_test_data.append(actual_avg_seg_length)
+        for res in result:
+            if res['windiff'] != -1:    # Skip if the value returned -1 as it meant not valid size of window
+                predictions[res['window_size']].append(res['windiff'])
+            else:
+                skipped_docs[res['window_size']] += 1
+
+    print ">> Summary:"
+    print "AVG segment length in test data:", np.mean(avg_segment_lengths_across_test_data)
+    headers = ["WindowSize", "SkippedDocs/TotalDocs", "Mean", "Std", "Min", "Max"]
+    print_values = []
+    for window_size in predictions:
+        data = predictions[window_size]
+        skip = skipped_docs[window_size]
+        print_values.append([window_size, str(skip) + "/" + str(len(data)+skip), np.mean(data), np.std(data), np.min(data), np.max(data)])
+    print tabulate(print_values, headers=headers)
+    print('___________________________________')
+
+
+def custom_fit(X, Y, model, batch_size, train_split=0.8, epochs=10):
         
     if train_split == 0:
         X_test, Y_test = X, Y
     else:
-        assert total_samples    # We need total samples while printing the progress bar, only for training
-
         # This is only for training! (If train_split =1 then only TEST)
         X_train, Y_train, X_test, Y_test = split_data(X, Y, train_split=train_split)
+
+        # Print Train stats
+        total_sentences, total_documents = 0, 0
+        total_documents = X_train.shape[0]
+        total_sentences = sum([doc.shape[0] for doc in X_train])
+        print "X-wiki TRAIN stats: Total %d sentences in %d documents" %(total_sentences, total_documents)
 
         class_weight = None
         if SCALE_LOSS_FUN:
@@ -205,7 +264,11 @@ def custom_fit(X, Y, model, batch_size, total_samples=None, train_split=0.8, epo
         print ">> Train AVG_SEGMENT_LENGTH:", train_avg_seg_len
 
         print 'Train...'
-        for epoch in range(epochs):
+        start_epoch = 0
+        if LOAD_SAVED_MODEL_AND_CONTINUE_TRAIN:   # If we have saved model, then continue from the last epoch where we stopped
+            start_epoch = saved_model_epoch_done  # The epoch count is zero indexed in TRAIN, while the count in saved file is 1 indexed
+
+        for epoch in range(start_epoch, epochs):
             mean_tr_acc, mean_tr_loss, mean_tr_rec = [], [], []
             rLoss, rRecall, rAcc = 0,0,0 # Running parameters for printing while training
             for batch_count, (batch_X_left, batch_X_mid, batch_X_right, batch_Y_mid) in enumerate(batch_gen_consecutive_context_segments_from_big_seq(X_train, Y_train, batch_size, ONE_SIDE_CONTEXT_SIZE)):
@@ -222,8 +285,8 @@ def custom_fit(X, Y, model, batch_size, total_samples=None, train_split=0.8, epo
                     mean_tr_loss.append(tr_loss)
                     mean_tr_rec.append(tr_rec)
                     #rLoss, rRecall, rAcc = (rLoss*batch_count + tr_loss)/(batch_count + 1), (rRecall*batch_count + tr_rec)/(batch_count + 1), (rAcc*batch_count + tr_acc)/(batch_count + 1)
-                    #progbar.prog_bar(True, total_samples, epochs, batch_size, epoch, batch_count, speed=speed, data={ 'rLoss': rLoss, 'rAcc': rAcc, 'rRec': rRecall })
-                    progbar.prog_bar(True, total_samples, epochs, batch_size, epoch, batch_count, speed=speed, data={ 'Loss': tr_loss, 'Acc': tr_acc, 'Rec': tr_rec })
+                    #progbar.prog_bar(True, total_sentences, epochs, batch_size, epoch, batch_count, speed=speed, data={ 'rLoss': rLoss, 'rAcc': rAcc, 'rRec': rRecall })
+                    progbar.prog_bar(True, total_sentences, epochs, batch_size, epoch, batch_count, speed=speed, data={ 'Loss': tr_loss, 'Acc': tr_acc, 'Rec': tr_rec })
 
                 except KeyboardInterrupt, SystemExit:
                     print "########################################################"
@@ -233,8 +296,9 @@ def custom_fit(X, Y, model, batch_size, total_samples=None, train_split=0.8, epo
                     if out == "pdb":
                         pdb.set_trace()
 
-            model.save("model_trainable_FALSE_epoc_%d.h5" %(epoch))
             progbar.end()
+            model.save("model_trainable_FALSE_epoc_%d.h5" %(epoch+1))
+            test_during_train(X_cli, Y_cli, model, batch_size)
         
             print ">> Epoch: %d/%d" %(epoch+1, epochs)
             print('accuracy training = {}'.format(np.mean(mean_tr_acc)))
@@ -327,15 +391,9 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
 
     which_model = 2
 
-    # Print Train stats
-    total_sentences, total_documents = 0, 0
-    total_documents = X.shape[0]
-    total_sentences = sum([doc.shape[0] for doc in X])
-    print "X-wiki TRAIN stats: Total %d sentences in %d documents" %(total_sentences, total_documents)
-
     if which_model == 2:
         #custom_fit(X, Y, model=model, batch_size=batch_size, train_split=0, epochs=epochs)
-        custom_fit(X, Y, model=model, batch_size=batch_size, total_samples=total_sentences, train_split=train_split, epochs=epochs)
+        custom_fit(X, Y, model=model, batch_size=batch_size, train_split=train_split, epochs=epochs)
         
         attn_weights = [model.get_layer("encode_left").get_weights(), model.get_layer("encode_right").get_weights()]
         print attn_weights[0]
@@ -378,6 +436,11 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
     
 
 if __name__ == "__main__":
+
+    # Print parameters
+    print "=== SCALE_LOSS_FUN: %d, ONE_SIDE_CONTEXT_SIZE: %d ===" % (int(SCALE_LOSS_FUN), ONE_SIDE_CONTEXT_SIZE)
+    print "NOTE: Make sure you have MIN_SENTENCES_IN_DOCUMENT >= 2*context_size + 1"
+
     # For which_model == 2
     SAMPLE_TYPE_wiki, X_wiki, Y_wiki, trained_sample_handler = get_input(sample_type=2, shuffle_documents=True, pad=False)
     NO_OF_SAMPLES, MAX_SEQUENCE_LENGTH, EMBEDDING_DIM = X_wiki.shape[0], -1, X_wiki[0].shape[1]          #MAX_SEQUENCE_LENGTH is is already padded
@@ -397,6 +460,10 @@ if __name__ == "__main__":
     print "#####################################################################"
     print "VOCAB_SIZE:",  len(dictionary_object.word2id_dic)
     print "#####################################################################"
-    model = lstm_model(SEQUENCES_LENGTH_FOR_TRAINING, EMBEDDING_DIM, embedding_W, len(dictionary_object.word2id_dic))
-    train_LSTM(X_wiki, Y_wiki, model, embedding_W, train_split=0.7, epochs=10, batch_size=60)
+    if LOAD_SAVED_MODEL_AND_CONTINUE_TRAIN:
+        model = load_saved_model()
+    else:
+        model = lstm_model(-1, EMBEDDING_DIM, embedding_W, len(dictionary_object.word2id_dic))
+        
+    train_LSTM(X_wiki, Y_wiki, model, embedding_W, train_split=0.7, epochs=10, batch_size=55)
     #train_LSTM(X_bio, Y_bio, model, embedding_W, train_split=0.7, epochs=1, batch_size=32)
