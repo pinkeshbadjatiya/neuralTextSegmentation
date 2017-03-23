@@ -51,6 +51,12 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         # Y.shape = (TOTAL_SENTENCES, 1)
         ld = load_data.LoadData()
         sample_type, samples = ld.load_biography_sequence()
+    elif sample_type == 6:
+        # type5: Fiction sequence of a multiple documents
+        # X.shape = (NO_OF_BOOKS, TOTAL_SENTENCES)
+        # Y.shape = (NO_OF_BOOKS, TOTAL_SENTENCES, 1)
+        ld = load_data.LoadData()
+        sample_type, samples = ld.load_fiction_sequence()
     else:
         print "NOTE: INVALID SAMPLE_TYPE!"
         return None

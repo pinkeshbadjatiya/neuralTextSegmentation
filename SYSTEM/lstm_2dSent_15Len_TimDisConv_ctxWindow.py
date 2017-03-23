@@ -30,6 +30,8 @@ import progbar, time
 SAMPLE_TYPE_cli, X_cli, Y_cli, trained_sample_handler = None, None, None, None
 SAMPLE_TYPE_wiki, X_wiki, Y_wiki = None, None, None
 SAMPLE_TYPE_bio, X_bio, Y_bio = None, None, None
+SAMPLE_TYPE_fic, X_fic, Y_fic = None, None, None
+
 GLOVE_EMBEDDING_DIM = 300
 SCALE_LOSS_FUN = True
 
@@ -387,7 +389,7 @@ def split_data(X, Y, train_split):
 
 
 def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=32):
-    global X_wiki, Y_wiki, X_cli, Y_cli, X_bio, Y_bio
+    global X_wiki, Y_wiki, X_cli, Y_cli, X_bio, Y_bio, X_fic, Y_fic
 
     which_model = 2
 
@@ -399,10 +401,12 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
         print attn_weights[0]
         print attn_weights[1]
         
-        #print "############## Clinical Data ###########"
-        #custom_fit(X_cli, Y_cli, model=model, batch_size=batch_size, train_split=0, epochs=-1)  # Test clinical
+        print "############## Clinical Data ###########"
+        custom_fit(X_cli, Y_cli, model=model, batch_size=batch_size, train_split=0, epochs=-1)  # Test clinical
         print "############## Biography Data ###########"
         custom_fit(X_bio, Y_bio, model=model, batch_size=batch_size, train_split=0, epochs=-1)  # Test biography
+        print "############## Fiction Data ###########"
+        custom_fit(X_fic, Y_fic, model=model, batch_size=batch_size, train_split=0, epochs=-1)  # Test fiction
 
 #    elif which_modle == 1:
 #        # Works for TYPE2 but check for others
@@ -451,8 +455,10 @@ if __name__ == "__main__":
     #NO_OF_SAMPLES, MAX_SEQUENCE_LENGTH, EMBEDDING_DIM = X_bio.shape[0], -1, X_bio[0].shape[1]          #MAX_SEQUENCE_LENGTH is is already padded
     
     # Clinical - Only for testing
-    #SAMPLE_TYPE_cli, X_cli, Y_cli, trained_sample_handler = get_input(sample_type=4, shuffle_documents=False, pad=False, trained_sent2vec_model=trained_sample_handler)
+    SAMPLE_TYPE_cli, X_cli, Y_cli, trained_sample_handler = get_input(sample_type=4, shuffle_documents=False, pad=False, trained_sent2vec_model=trained_sample_handler)
     
+    # Fiction - Only for testing
+    SAMPLE_TYPE_fic, X_fic, Y_fic, trained_sample_handler = get_input(sample_type=6, shuffle_documents=False, pad=False, trained_sent2vec_model=trained_sample_handler)
 
     dictionary_object = trained_sample_handler.dictionary
     embedding_W = dictionary_object.get_embedding_weights()
