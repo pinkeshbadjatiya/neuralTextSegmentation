@@ -48,6 +48,7 @@ class DataHandler:
         #self.PROCESS_MAX_FILES = 20
         #self.PROCESS_MAX_FILES = 10
         self.PROCESS_MAX_FILES = 5
+        #self.PROCESS_MAX_FILES = 1
 
         ################## VARIABLES ###################
         self.document_id_to_title = {}  # Map for the document ID's

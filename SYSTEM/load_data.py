@@ -1,17 +1,18 @@
-import os
-import pdb
+import os, pdb, nltk
 
 class LoadData:
     DIR="./data/"
     SUB_DIRS = {
-        "fiction": "fiction/",
+        "fiction": "fiction/new/",
         "clinical": "clinical/",
         "ai": "ai/",
         "biography": "biography/chapters/",
     }
 
     def __init__(self):
+        # load_XXX_sequence returns [[(s1, gt1),(s2, gt2), (s3, gt3)..., (sN, gtN)], [], ... []]
         self.documents = []
+        self.sent_tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
 
     ####### CLINICAL DATA ##########################################################################################
     def load_clinical_sequence(self):
@@ -52,10 +53,9 @@ class LoadData:
         print "Total CLINICAL data: %d chapters, %d paragraphs and %d sentences" %(len(document), sum([len(chap) for chap in document]), sum([sum([len(par) for par in chap]) for chap in document]))
         return document
 
-    
     ####### BIOGRAPHY DATA ##########################################################################################
     def load_biography_sequence(self):
-        SAMPLE_TYPE = 5     # 4th sample type
+        SAMPLE_TYPE = 5     # 5th sample type
         doc = self.load_biography()
         sequence = []
         for chapter in doc:
@@ -94,10 +94,62 @@ class LoadData:
         return document
 
     
+    ####### FICTION DATA ##########################################################################################
+    def load_fiction_sequence(self):
+        SAMPLE_TYPE = 6     # 6th sample type
+        doc_data = self.load_fiction()
+        documents = []
+        for book in doc_data:
+            sequence = []
+            for par in book:
+                for i, line in enumerate(par):
+                    sequence.append((line, int(i==0)))
+            documents.append(sequence)
+        return SAMPLE_TYPE, documents   # Return multiple sample with sequences of sentences. Each sample is a book
 
+    
+    def load_fiction(self, datatype='testing'):
+
+        if datatype is 'testing':
+            print "##### Loading FICTION: testing data ######"
+        else:
+            print "##### Loading FICTION: development data ######"
+
+        extension = '.dev' if datatype is 'development' else '.ref'
+        dirname = self.DIR + self.SUB_DIRS['fiction']
+        
+        # Use appropriate file type for data
+        files = sorted([dirname+fil for fil in os.listdir(dirname) if fil.endswith(extension)])
+
+        document = []           # Initialize document
+        for fil in files:
+            book = []
+            with open(fil) as f:
+                data = f.readlines()
+            paragraph = []
+            for line in data:
+                line = line.strip().strip(".")      # Remove full-stop as well
+                if line.startswith("======="):
+                    if len(paragraph) > 0:
+                        book.append(paragraph[1:])  # Do not add the 1st line as it is the TITLE of the section
+                    paragraph = []
+                else:
+                    if len(line) > 0:
+                        # Each line does not have a single sentence. There are multiple sentences in a single line as well.
+                        #paragraph.extend(self.sent_tokenizer.tokenize(line))    # Tokenizer splits a chunk of sentences into 1 or more sentences, so we need to extend the main list.
+                        paragraph.append(line)
+            if len(paragraph) > 0:
+                book.append(paragraph[1:])      # Do not add the 1st line as it is the TITLE of the section
+            document.append(book)
+
+        print "Total BIOGRAPHY data: %d chapters, %d paragraphs and %d sentences" %(len(document), sum([len(chap) for chap in document]), sum([sum([len(par) for par in chap]) for chap in document]))
+        return document
+
+    
 
 if __name__=="__main__":
     ld = LoadData()
-    clinical_data = ld.load_clinical_sequence()
-    biography_data = ld.load_biography_sequence()
+    SAMPLE_TYPE_cli, clinical_data = ld.load_clinical_sequence()
+    SAMPLE_TYPE_bio, biography_data = ld.load_biography_sequence()
+    SAMPLE_TYPE_fic, fiction_data = ld.load_fiction_sequence()
     pdb.set_trace()
