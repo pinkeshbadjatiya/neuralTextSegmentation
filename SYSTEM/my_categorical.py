@@ -1,6 +1,10 @@
 import numpy as np
 from keras.utils.np_utils import to_categorical
 
+from theano.tensor import basic as tensor
+import keras.backend as K
+
+
 def to_categorical_MULTI_DIM(y, nb_classes=None):
     """Converts a class vector (integers) to binary class matrix.
     E.g. for use with categorical_crossentropy.
@@ -25,11 +29,19 @@ def to_categorical_MULTI_DIM(y, nb_classes=None):
         categorical[i] = to_categorical(y[i], nb_classes=nb_classes) 
     return categorical
 
-from theano.tensor import basic as tensor
-import keras.backend as K
+
 
 def w_binary_crossentropy(target, output):
     # Weighted binary_crossentropy
     # Where W is the loss penalty factor when a split sentence is classified as a normal sentence
-    W = 5
-    return K.mean(-(W * target * tensor.log(output) + (1.0 - target) * tensor.log(1.0 - output)), axis=-1)
+    freq = {
+        0: 80,
+        1: 20
+    }
+
+    weights = {
+        0: (1.0*freq[1])/freq[0],
+        1: 1.0
+    }
+
+    return K.mean(-(weights[1] * target * tensor.log(output) + weights[0] * (1.0 - target) * tensor.log(1.0 - output)), axis=-1)

@@ -45,14 +45,11 @@ class CustomSent2vec(object):
             vec = []
             for w in word_tokenize(codecs.decode(sentence, "utf-8")):
                 if not isINT(w):
-                    try:
-                        word_id = self.dictionary.word2id(w)
-                        if word_id is None: # Skip useless words, for words without any vector representation use the `<UNK>` word_id
-                            continue
-                        vec.append(word_id)
-                    except KeyError:
-                        # Skip all the words whose vector representation is not present in the word2vec pre-trained model
+                    word_id = self.dictionary.word2id(w)
+                    if word_id is None: # Skip useless words, for words without any vector representation use the `<UNK>` word_id
                         continue
+                    vec.append(word_id)
+
             if len(vec) > 0:
                 sample_vec.append(np.asarray(vec))
                 g_ths.append(groundTruths[i])

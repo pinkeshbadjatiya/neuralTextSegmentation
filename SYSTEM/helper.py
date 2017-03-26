@@ -32,58 +32,44 @@ def compute_avg_seg_len(y_true):
     return np.mean(seg_sizes)
 
 
-def windiff_metric_ONE_SEQUENCE(y_true, y_pred, win_size=-1, rounded=True, print_individual_stats=True):
+def windiff_metric_ONE_SEQUENCE(y_true, y_pred, window_size=-1, rounded=True, print_individual_stats=True):
     """ Make sure Y_pred is ROUNDED
     """
-    if win_size == -1:
-        window_sizes = [3,5,7,9,11,13,15,17,19,21,23,25,27,28,29,31]
-    else:
-        window_sizes = [win_size]
-
-    #print "Window Size:", window_sizes
-
     #####################################################
     # Remove the padded elements before calculating the
     # windiff metric so that we have better values
     #####################################################
 
-    metric_outputs = []
     assert y_true.shape[0] == y_pred.shape[0]
 
-    print ">>>>> X:", y_true.shape
-    actual_seg_length = compute_avg_seg_len(y_true)
-    print "Avg Seg Length: %f | We use SEG_LEN/2 as the window size" %(actual_seg_length)
+    average_seg_length = compute_avg_seg_len(y_true)
+    if window_size == -1:
+        window_size = int(average_seg_length * 0.5)   # WindowSize is equal to 1/2 of average window size of that document
 
-    for window_size in window_sizes:
-        ans = -1
-        lenn = y_pred.shape[0]
-        if not rounded:
-            y_pred = round(y_pred)
+    lenn = y_pred.shape[0]
+    if not rounded:
+        y_pred = round(y_pred)
     
-        if window_size <= lenn:
-            t_cum = np.cumsum(y_true, axis=0)
-            p_cum = np.cumsum(y_pred, axis=0)
-            ans_list = []
-            for i in range(len(y_true)):
-                if i < window_size-1:
-                    continue
-                elif i == window_size-1:
-                    ans_list.append((t_cum[i] - p_cum[i]) != 0)
-                else:
-                    ans_list.append(((t_cum[i]-t_cum[i-window_size]) - (p_cum[i]-p_cum[i-window_size])) != 0)
-            ans = (np.sum(ans_list)*1.0)/(lenn - window_size)
-        else:
-            print 'ERROR: Window Size larger then total sample length'
+    if window_size <= lenn:
+        t_cum = np.cumsum(y_true, axis=0)
+        p_cum = np.cumsum(y_pred, axis=0)
+        ans_list = []
+        for i in range(len(y_true)):
+            if i < window_size-1:
+                continue
+            elif i == window_size-1:
+                ans_list.append((t_cum[i] - p_cum[i]) != 0)
+            else:
+                ans_list.append(((t_cum[i]-t_cum[i-window_size]) - (p_cum[i]-p_cum[i-window_size])) != 0)
+        ans = (np.sum(ans_list)*1.0)/(lenn - window_size)
+    else:
+        print 'ERROR: IMP: Window Size larger then total sample length'
+        pass
 
-        metric_outputs.append({ 'window_size': window_size,
-                                'windiff': ans
-                                })
     if print_individual_stats:
-        windiff_values = [dic['windiff'] for dic in metric_outputs]
-        headers = ['****'] + ["Wind=" + str(i) for i in window_sizes]
-        print tabulate([["WinDiff values"] + windiff_values], headers=headers)
+        print ">> X:", y_true.shape, "| Avg_Seg_Length: %f | WinDiff: %f" %(average_seg_length, ans)
 
-    return actual_seg_length, metric_outputs
+    return average_seg_length, ans
 
 
 #def save_model(filename, model):

@@ -5,3 +5,4 @@ sklearn
 gensim
 nltk
 theano
+h5py

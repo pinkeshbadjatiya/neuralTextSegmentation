@@ -41,7 +41,7 @@ class DataHandler:
         #self.PROCESS_MAX_FILES = 4400
         #self.PROCESS_MAX_FILES = 4000
         #self.PROCESS_MAX_FILES = 1500
-        #self.PROCESS_MAX_FILES = 900
+        self.PROCESS_MAX_FILES = 900
         #self.PROCESS_MAX_FILES = 800
         #self.PROCESS_MAX_FILES = 200
         #self.PROCESS_MAX_FILES = 50

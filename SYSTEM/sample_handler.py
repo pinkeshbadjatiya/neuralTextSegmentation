@@ -30,6 +30,7 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
     start = time.time()
     data_handler = DataHandler()
 
+    print "==========================================="
     if sample_type == 1:
         # NOT SURE ABOUT THIS TYPE!
         sample_type, samples = data_handler.get_samples()            # Get samples, each sample is a set of INPUT_VECTOR_LENGTH consecutive sentences. No document information captured
@@ -83,7 +84,7 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         if sample_type == 1:
             # Correct groundtruth sync problem here
             sentences, groundTruths = model.convert_sample_to_vec(sentences, groundTruths)
-        elif sample_type in (2, 3, 4, 5):
+        elif sample_type in (2, 3, 4, 5, 6):
             sentences, groundTruths = model.convert_sequence_sample_to_vec(sentences, groundTruths)
         else:
             print "Wrong Sample TYPE"
