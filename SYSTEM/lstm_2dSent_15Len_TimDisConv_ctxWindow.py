@@ -262,15 +262,16 @@ def custom_fit(X_train, Y_train, X_test, Y_test, model, batch_size, epochs=10):
         if SAVE_MODEL_AFTER_EACH_EPOCH:
             model.save("model_trainable_%s_epoc_%d.h5" %(str(TRAINABLE_EMBEDDINGS), epoch+1))
 
+        print ">> Epoch: %d/%d" %(epoch+1, epochs)
+        print('accuracy training = {}'.format(np.mean(mean_tr_acc)))
+        print('recall training = {}'.format(np.mean(mean_tr_rec)))
+        print('loss training = {}'.format(np.mean(mean_tr_loss)))
+
         testing_on_data("Wikipedia", X_test, Y_test, model, batch_size, summary_only=True)
         testing_on_data("Clinical", X_cli, Y_cli, model, batch_size)
         testing_on_data("Biography", X_bio, Y_bio, model, batch_size)
         testing_on_data("Fiction", X_fic, Y_fic, model, batch_size, summary_only=True)
     
-        print ">> Epoch: %d/%d" %(epoch+1, epochs)
-        print('accuracy training = {}'.format(np.mean(mean_tr_acc)))
-        print('recall training = {}'.format(np.mean(mean_tr_rec)))
-        print('loss training = {}'.format(np.mean(mean_tr_loss)))
         print('___________________________________')
     
     # Testing
@@ -293,7 +294,10 @@ def testing_on_data(type_of_data, X_test, Y_test, model, batch_size, summary_onl
     # Predicting
     print "====================== %s ======================" %(type_of_data)
     print "Predicting... (SEPARATELY FOR EACH DOCUMENT)"
-    data = []
+    data = {
+        'wd': [],
+        'pk': []
+    }
     avg_segment_lengths_across_test_data = [] # Average segment length across the documents
     for Xi_test, Yi_test in zip(X_test, Y_test):
         pred_per_doc = []
@@ -307,13 +311,15 @@ def testing_on_data(type_of_data, X_test, Y_test, model, batch_size, summary_onl
 
         #rounded = np.round(pred_per_doc)
         pred_per_doc = np.concatenate(pred_per_doc, axis=0)
-        actual_avg_seg_length, result = helper.windiff_metric_ONE_SEQUENCE(Yi_test[0], pred_per_doc, win_size=-1, rounded=False, print_individual_stats=not summary_only)
+        actual_avg_seg_length, result = helper.windiff_and_pk_metric_ONE_SEQUENCE(Yi_test[0], pred_per_doc, window_size=-1, rounded=False, print_individual_stats=not summary_only)
         avg_segment_lengths_across_test_data.append(actual_avg_seg_length)
-        data.append(res)
+        data['pk'].append(result['pk'])
+        data['wd'].append(result['wd'])
 
     print ">> Summary (%s):" %(type_of_data)
     print "AVG segment length in test data: %f" % (np.mean(avg_segment_lengths_across_test_data))
-    print "WinDiff metric:: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data), np.std(data), np.min(data), np.max(data))
+    print "WinDiff metric:: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['wd']), np.std(data['wd']), np.min(data['wd']), np.max(data['wd']))
+    print "Pk metric:: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['pk']), np.std(data['pk']), np.min(data['pk']), np.max(data['pk']))
     print('___________________________________')
 
 

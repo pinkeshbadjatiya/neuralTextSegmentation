@@ -110,7 +110,7 @@ class DataHandler:
 
 
     def filter_docs(self):
-        print "Filtering GOOD documents..."
+        print "Filtering GOOD documents using MIN_(SENT/DOC/SEC..) filters ...."
         best_docs = []
         for (docID, sections) in self.documents:
             # Remove the 1st section as it might be very complex in structure

@@ -22,6 +22,7 @@ def round(arr):
     return np.round(np.array(arr, dtype=np.float64))
 
 def compute_avg_seg_len(y_true):
+    # Assuming segment_length is the no of sentences in a section/segment
     idx = np.where(y_true == 1)[0]
     seg_sizes, seg_count = [], idx.shape[0]
     for i in range(seg_count):
@@ -32,13 +33,15 @@ def compute_avg_seg_len(y_true):
     return np.mean(seg_sizes)
 
 
-def windiff_metric_ONE_SEQUENCE(y_true, y_pred, window_size=-1, rounded=True, print_individual_stats=True):
+def windiff_and_pk_metric_ONE_SEQUENCE(y_true, y_pred, window_size=-1, rounded=True, print_individual_stats=True):
     """ Make sure Y_pred is ROUNDED
     """
     #####################################################
     # Remove the padded elements before calculating the
     # windiff metric so that we have better values
     #####################################################
+
+    # NOTE: WindowSize is the no of boundaries between the ith and jth sentence. i.e. no of sentences in between + 1
 
     assert y_true.shape[0] == y_pred.shape[0]
 
@@ -49,25 +52,22 @@ def windiff_metric_ONE_SEQUENCE(y_true, y_pred, window_size=-1, rounded=True, pr
     lenn = y_pred.shape[0]
     if not rounded:
         y_pred = round(y_pred)
-    
-    if window_size <= lenn:
-        t_cum = np.cumsum(y_true, axis=0)
-        p_cum = np.cumsum(y_pred, axis=0)
-        ans_list = []
-        for i in range(len(y_true)):
-            if i < window_size-1:
-                continue
-            elif i == window_size-1:
-                ans_list.append((t_cum[i] - p_cum[i]) != 0)
-            else:
-                ans_list.append(((t_cum[i]-t_cum[i-window_size]) - (p_cum[i]-p_cum[i-window_size])) != 0)
-        ans = (np.sum(ans_list)*1.0)/(lenn - window_size)
-    else:
-        print 'ERROR: IMP: Window Size larger then total sample length'
-        pass
+
+    t_cum, p_cum = np.cumsum(y_true, axis=0), np.cumsum(y_pred, axis=0)
+    ans_list = {
+          'wd': [],
+          'pk': []
+        }
+    for i in range(0, lenn - window_size):
+        ans_list['wd'].append((sum(y_true[i+1: i+window_size+1]) - sum(y_pred[i+1: i+window_size+1])) != 0)   #### IMP. IMP. IMP.
+        ans_list['pk'].append(((t_cum[i]-t_cum[i+window_size]) - (p_cum[i]-p_cum[i+window_size])) != 0)
+
+    ans = {}
+    ans['wd'] = (np.sum(ans_list['wd'])*1.0)/(lenn - window_size)
+    ans['pk'] = (np.sum(ans_list['pk'])*1.0)/(lenn - window_size)
 
     if print_individual_stats:
-        print ">> X:", y_true.shape, "| Avg_Seg_Length: %f | WinDiff: %f" %(average_seg_length, ans)
+        print ">> X:", y_true.shape, "| Avg_Seg_Length: %f | WinDiff: %f | Pk: %f" %(average_seg_length, ans['wd'], ans['pk'])
 
     return average_seg_length, ans
 
