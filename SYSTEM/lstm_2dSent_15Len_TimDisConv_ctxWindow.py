@@ -71,8 +71,8 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
 
     print 'Build MAIN model...'
     #pdb.set_trace()
-    ngram_filters = [1, 2, 3, 4]
-    conv_hidden_units = [200, 200, 200, 200]
+    ngram_filters = [2, 3, 4, 5]
+    conv_hidden_units = [300, 300, 300, 300]
     
     left_context= Input(shape=(ONE_SIDE_CONTEXT_SIZE+1, embedding_dim), dtype='float32', name='left-context')
     main_input = Input(shape=(1, embedding_dim), dtype='float32')
@@ -89,34 +89,45 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
                              #border_mode='same',
                              border_mode='valid',
                              activation='tanh', name='Convolution-'+str(n_gram)+"gram")
-        lef, mid, rig = TimeDistributed(conv_layer)(embedded_input_left), TimeDistributed(conv_layer)(embedded_input_main), TimeDistributed(conv_layer)(embedded_input_right)
-        flat_L, flat_M, flat_R = TimeDistributed(Flatten())(lef), TimeDistributed(Flatten())(mid), TimeDistributed(Flatten())(rig)
-        #pool = GlobalMaxPooling1D()(conv)
-        convsL.append(flat_L), convsM.append(flat_M), convsR.append(flat_R)
+        lef = TimeDistributed(conv_layer, name='TD-convolution-left-'+str(n_gram)+"gram")(embedded_input_left)
+        mid = TimeDistributed(conv_layer, name='TD-convolution-mid-'+str(n_gram)+"gram")(embedded_input_main)
+        rig = TimeDistributed(conv_layer, name='TD-convolution-right-'+str(n_gram)+"gram")(embedded_input_right)
+
+        # Use Flatten() instead of MaxPooling()
+        #flat_L = TimeDistributed(Flatten(), name='TD-flatten-left-'+str(n_gram)+"gram")(lef)
+        #flat_M = TimeDistributed(Flatten(), name='TD-flatten-mid-'+str(n_gram)+"gram")(mid)
+        #flat_R = TimeDistributed(Flatten(), name='TD-flatten-right-'+str(n_gram)+"gram")(rig)
+        #convsL.append(flat_L), convsM.append(flat_M), convsR.append(flat_R)
+
+        # Use GlobalMaxPooling1D() instead of Flatten()
+        pool_L = TimeDistributed(GlobalMaxPooling1D(), name='TD-GlobalMaxPooling-left-'+str(n_gram)+"gram")(lef)
+        pool_M = TimeDistributed(GlobalMaxPooling1D(), name='TD-GlobalMaxPooling-mid-'+str(n_gram)+"gram")(mid)
+        pool_R = TimeDistributed(GlobalMaxPooling1D(), name='TD-GlobalMaxPooling-right-'+str(n_gram)+"gram")(rig)
+        convsL.append(pool_L), convsM.append(pool_M), convsR.append(pool_R)
+
     convoluted_left, convoluted_mid, convoluted_right = Merge(mode='concat')(convsL), Merge(mode='concat')(convsM), Merge(mode='concat')(convsR)
     CONV_DIM = sum(conv_hidden_units)
 
     flat_mid = Flatten()(convoluted_mid)
-    encode_mid = Dense(512)(flat_mid)
+    encode_mid = Dense(512, name='dense-intermediate-mid-encoder')(flat_mid)
 
-    context_encoder = Bidirectional(LSTM(512, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.2, dropout_U=0.2, return_sequences=True, stateful=False), merge_mode='concat')
-    encode_left, encode_right = Attention(name='encode_left')(context_encoder(convoluted_left)), Attention(name='encode_right')(context_encoder(convoluted_right))
-    encode_left_drop, encode_mid_drop, encode_right_drop = Dropout(0.4)(encode_left), Dropout(0.4)(encode_mid), Dropout(0.4)(encode_right)
+    context_encoder = Bidirectional(LSTM(1000, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.1, dropout_U=0.1, return_sequences=True, stateful=False), merge_mode='concat')
+    encode_left, encode_right = Attention(name='encode-left-attention')(context_encoder(convoluted_left)), Attention(name='encode-right-attention')(context_encoder(convoluted_right))
+    encode_left_drop, encode_mid_drop, encode_right_drop = Dropout(0.05)(encode_left), Dropout(0.05)(encode_mid), Dropout(0.05)(encode_right)
 
-    #context_encoder = Bidirectional(LSTM(512, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), dropout_W=0.2, dropout_U=0.2, return_sequences=False, stateful=False), merge_mode='concat')
-    #encode_left_drop, encode_right_drop, = Dropout(0.4)(encode_left), Dropout(0.4)(encode_right)
     encoded_info = Merge(mode='concat', name='encode_info')([encode_left_drop, encode_mid_drop, encode_right_drop])
 
     decoded = Dense(600, name='decoded')(encoded_info)
-    decoded_drop = Dropout(0.4, name='decoded_drop')(decoded)
+    decoded_drop = Dropout(0.1, name='decoded_drop')(decoded)
     
     output = Dense(1, activation='sigmoid')(decoded_drop)
     model = Model(input=[left_context, main_input, right_context], output=output)
     model.layers[1].trainable = TRAINABLE_EMBEDDINGS
-    model.compile(loss=w_binary_crossentropy, optimizer='rmsprop', metrics=['accuracy', 'recall'])
+    #model.compile(loss=w_binary_crossentropy, optimizer='rmsprop', metrics=['accuracy', 'recall'])
+    model.compile(loss=w_binary_crossentropy, optimizer='adadelta', metrics=['accuracy', 'recall'])
 
 
-    print model.summary()
+    print model.summary(line_length=150, positions=[.46, .65, .77, 1.])
     return model
 
 def batch_gen_consecutive_context_segments_from_big_seq(X_with_doc, Y_with_doc, batch_size, one_side_context_size):
