@@ -53,18 +53,44 @@ def windiff_and_pk_metric_ONE_SEQUENCE(y_true, y_pred, window_size=-1, rounded=T
     if not rounded:
         y_pred = round(y_pred)
 
-    t_cum, p_cum = np.cumsum(y_true, axis=0), np.cumsum(y_pred, axis=0)
-    ans_list = {
-          'wd': [],
-          'pk': []
-        }
+    # Convert all the values in single arrays for easy of comparisons and indexing
+    t_cum, p_cum = np.cumsum(y_true, axis=0).reshape((1, lenn))[0], np.cumsum(y_pred, axis=0).reshape((1, lenn))[0]
+    y_true_reshaped = y_true.reshape((1, lenn))[0]
+    y_pred_reshaped = y_pred.reshape((1, lenn))[0]
+
+    measurments, pk_differences, wd_differences = 0, 0, 0
     for i in range(0, lenn - window_size):
-        ans_list['wd'].append((sum(y_true[i+1: i+window_size+1]) - sum(y_pred[i+1: i+window_size+1])) != 0)   #### IMP. IMP. IMP.
-        ans_list['pk'].append(((t_cum[i]-t_cum[i+window_size]) - (p_cum[i]-p_cum[i+window_size])) != 0)
+        j = i + window_size   # Their should be a total of "window_size" number of probes in between i and j
+
+        # WinDiff
+        ###################
+        ref_boundaries, hyp_boundaries = 0, 0
+
+        ref_window, hyp_window = y_true[i: j+1], y_pred[i: j+1]
+        for idx in range(0, window_size - 1):  # Iterate over all the elements of window
+
+            if ref_window[idx] == 0 and ref_window[idx+1] == 1:   # Ref boundary exists
+                ref_boundaries += 1
+
+            if hyp_window[idx] == 0 and hyp_window[idx+1] == 1:   # Hyp boundary exists
+                hyp_boundaries += 1
+
+        if ref_boundaries != hyp_boundaries:
+            wd_differences += 1
+
+        # Pk
+        ###################
+        #pdb.set_trace()
+        agree_ref = t_cum[i] == t_cum[j]
+        agree_hyp = p_cum[i] == p_cum[j]
+        if agree_ref != agree_hyp:
+            pk_differences += 1
+
+        measurments += 1
 
     ans = {}
-    ans['wd'] = (np.sum(ans_list['wd'])*1.0)/(lenn - window_size)
-    ans['pk'] = (np.sum(ans_list['pk'])*1.0)/(lenn - window_size)
+    ans['wd'] = (wd_differences*1.0)/(measurments + 1)
+    ans['pk'] = (pk_differences*1.0)/measurments
 
     if print_individual_stats:
         print ">> X:", y_true.shape, "| Avg_Seg_Length: %f | WinDiff: %f | Pk: %f" %(average_seg_length, ans['wd'], ans['pk'])

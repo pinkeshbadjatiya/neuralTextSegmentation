@@ -72,11 +72,11 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
     print 'Build MAIN model...'
     #pdb.set_trace()
     ngram_filters = [2, 3, 4, 5]
-    conv_hidden_units = [300, 300, 300, 300]
+    conv_hidden_units = [200, 200, 200, 200]
     
     left_context= Input(shape=(ONE_SIDE_CONTEXT_SIZE+1, embedding_dim), dtype='float32', name='left-context')
-    main_input = Input(shape=(1, embedding_dim), dtype='float32')
-    right_context = Input(shape=(ONE_SIDE_CONTEXT_SIZE+1, embedding_dim), dtype='float32')
+    main_input = Input(shape=(1, embedding_dim), dtype='float32', name='main-input')
+    right_context = Input(shape=(ONE_SIDE_CONTEXT_SIZE+1, embedding_dim), dtype='float32', name='right-context')
 
     context_embedder = TimeDistributed(Embedding(vocab_size + 1, GLOVE_EMBEDDING_DIM, weights=[embedding_matrix], input_length=embedding_dim, init='uniform'))
     main_input_embedder = TimeDistributed(Embedding(vocab_size + 1, GLOVE_EMBEDDING_DIM, weights=[embedding_matrix], input_length=embedding_dim, init='uniform'))
@@ -86,8 +86,8 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
     for n_gram, hidden_units in zip(ngram_filters, conv_hidden_units):
         conv_layer = Convolution1D(nb_filter=hidden_units,
                              filter_length=n_gram,
-                             #border_mode='same',
-                             border_mode='valid',
+                             border_mode='same',
+                             #border_mode='valid',
                              activation='tanh', name='Convolution-'+str(n_gram)+"gram")
         lef = TimeDistributed(conv_layer, name='TD-convolution-left-'+str(n_gram)+"gram")(embedded_input_left)
         mid = TimeDistributed(conv_layer, name='TD-convolution-mid-'+str(n_gram)+"gram")(embedded_input_main)
@@ -109,16 +109,18 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
     CONV_DIM = sum(conv_hidden_units)
 
     flat_mid = Flatten()(convoluted_mid)
-    encode_mid = Dense(512, name='dense-intermediate-mid-encoder')(flat_mid)
+    encode_mid = Dense(300, name='dense-intermediate-mid-encoder')(flat_mid)
 
-    context_encoder = Bidirectional(LSTM(1000, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.1, dropout_U=0.1, return_sequences=True, stateful=False), merge_mode='concat')
-    encode_left, encode_right = Attention(name='encode-left-attention')(context_encoder(convoluted_left)), Attention(name='encode-right-attention')(context_encoder(convoluted_right))
-    encode_left_drop, encode_mid_drop, encode_right_drop = Dropout(0.05)(encode_left), Dropout(0.05)(encode_mid), Dropout(0.05)(encode_right)
+    context_encoder_intermediate = Bidirectional(LSTM(500, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.1, dropout_U=0.1, return_sequences=True, stateful=False), name='BiLSTM-context-encoder-intermediate', merge_mode='concat')
+    context_encoder = Bidirectional(LSTM(500, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.1, dropout_U=0.1, return_sequences=True, stateful=False), name='BiLSTM-context-encoder', merge_mode='concat')
+    encode_left = Attention(name='encode-left-attention')(context_encoder(context_encoder_intermediate(convoluted_left)))
+    encode_right = Attention(name='encode-right-attention')(context_encoder(context_encoder_intermediate(convoluted_right)))
+    encode_left_drop, encode_mid_drop, encode_right_drop = Dropout(0.1)(encode_left), Dropout(0.1)(encode_mid), Dropout(0.1)(encode_right)
 
     encoded_info = Merge(mode='concat', name='encode_info')([encode_left_drop, encode_mid_drop, encode_right_drop])
 
-    decoded = Dense(600, name='decoded')(encoded_info)
-    decoded_drop = Dropout(0.1, name='decoded_drop')(decoded)
+    decoded = Dense(500, name='decoded')(encoded_info)
+    decoded_drop = Dropout(0.2, name='decoded_drop')(decoded)
     
     output = Dense(1, activation='sigmoid')(decoded_drop)
     model = Model(input=[left_context, main_input, right_context], output=output)
