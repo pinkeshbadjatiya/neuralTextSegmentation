@@ -25,6 +25,7 @@ from tabulate import tabulate
 #from attention_lstm import AttentionLSTM
 #from attention_lstm_without_weights import Attention
 from final_attention_layer import Attention
+from AttentionWithContext import AttentionWithContext
 import progbar, time
 
 trained_sample_handler = None
@@ -38,14 +39,14 @@ SCALE_LOSS_FUN = True
 
 # SEQUENCES_LENGTH_FOR_TRAINING = 40
 
-ONE_SIDE_CONTEXT_SIZE = 7
+ONE_SIDE_CONTEXT_SIZE = 15
 
 LOAD_SAVED_MODEL_AND_CONTINUE_TRAIN = False
 SAVE_MODEL_AFTER_EACH_EPOCH = False
-TRAINABLE_EMBEDDINGS = True
+TRAINABLE_EMBEDDINGS = False
 
 
-np.random.seed(12345)   # IMP seed
+np.random.seed(2345)   # IMP seed
 saved_model_epoch_done = None
 
 def load_saved_model():
@@ -111,16 +112,20 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
     flat_mid = Flatten()(convoluted_mid)
     encode_mid = Dense(300, name='dense-intermediate-mid-encoder')(flat_mid)
 
-    context_encoder_intermediate = Bidirectional(LSTM(500, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.1, dropout_U=0.1, return_sequences=True, stateful=False), name='BiLSTM-context-encoder-intermediate', merge_mode='concat')
-    context_encoder = Bidirectional(LSTM(500, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.1, dropout_U=0.1, return_sequences=True, stateful=False), name='BiLSTM-context-encoder', merge_mode='concat')
-    encode_left = Attention(name='encode-left-attention')(context_encoder(context_encoder_intermediate(convoluted_left)))
-    encode_right = Attention(name='encode-right-attention')(context_encoder(context_encoder_intermediate(convoluted_right)))
-    encode_left_drop, encode_mid_drop, encode_right_drop = Dropout(0.1)(encode_left), Dropout(0.1)(encode_mid), Dropout(0.1)(encode_right)
+    context_encoder_intermediate1 = Bidirectional(LSTM(600, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.2, dropout_U=0.2, return_sequences=True, stateful=False), name='BiLSTM-context-encoder-intermediate1', merge_mode='concat')
+    #context_encoder_intermediate2 = Bidirectional(LSTM(500, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.1, dropout_U=0.1, return_sequences=True, stateful=False), name='BiLSTM-context-encoder-intermediate2', merge_mode='concat')
+    context_encoder = Bidirectional(LSTM(600, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.2, dropout_U=0.2, return_sequences=True, stateful=False), name='BiLSTM-context-encoder', merge_mode='concat')
+
+    #encode_left = Attention(name='encode-left-attention')(context_encoder(context_encoder_intermediate1(convoluted_left)))
+    #encode_right = Attention(name='encode-right-attention')(context_encoder(context_encoder_intermediate1(convoluted_right)))
+    encode_left = AttentionWithContext(name='encode-left-attention')(context_encoder(context_encoder_intermediate1(convoluted_left)))
+    encode_right = AttentionWithContext(name='encode-right-attention')(context_encoder(context_encoder_intermediate1(convoluted_right)))
+    encode_left_drop, encode_mid_drop, encode_right_drop = Dropout(0.3)(encode_left), Dropout(0.2)(encode_mid), Dropout(0.3)(encode_right)
 
     encoded_info = Merge(mode='concat', name='encode_info')([encode_left_drop, encode_mid_drop, encode_right_drop])
 
     decoded = Dense(500, name='decoded')(encoded_info)
-    decoded_drop = Dropout(0.2, name='decoded_drop')(decoded)
+    decoded_drop = Dropout(0.3, name='decoded_drop')(decoded)
     
     output = Dense(1, activation='sigmoid')(decoded_drop)
     model = Model(input=[left_context, main_input, right_context], output=output)
@@ -262,6 +267,15 @@ def custom_fit(X_train, Y_train, X_test, Y_test, model, batch_size, epochs=10):
                 #progbar.prog_bar(True, total_sentences, epochs, batch_size, epoch, batch_count, speed=speed, data={ 'rLoss': rLoss, 'rAcc': rAcc, 'rRec': rRecall })
                 progbar.prog_bar(True, total_sentences, epochs, batch_size, epoch, batch_count, speed=speed, data={ 'Loss': tr_loss, 'Acc': tr_acc, 'Rec': tr_rec })
 
+                # Print test results after every 100 batch trains
+                if (not batch_count % 100) and batch_count != 0:
+                    testing_on_data("Wikipedia", X_test, Y_test, model, batch_size, summary_only=True)
+                    testing_on_data("Clinical", X_cli, Y_cli, model, batch_size)
+                    testing_on_data("Biography", X_bio, Y_bio, model, batch_size)
+                    testing_on_data("Fiction", X_fic, Y_fic, model, batch_size, summary_only=True)
+
+
+
             except KeyboardInterrupt, SystemExit:
                 print ""
                 print "########################################################"
@@ -308,7 +322,8 @@ def testing_on_data(type_of_data, X_test, Y_test, model, batch_size, summary_onl
     print "====================== %s ======================" %(type_of_data)
     print "Predicting... (SEPARATELY FOR EACH DOCUMENT)"
     data = {
-        'wd': [],
+        'wd_r': [],
+        'wd_e': [],
         'pk': []
     }
     avg_segment_lengths_across_test_data = [] # Average segment length across the documents
@@ -327,11 +342,13 @@ def testing_on_data(type_of_data, X_test, Y_test, model, batch_size, summary_onl
         actual_avg_seg_length, result = helper.windiff_and_pk_metric_ONE_SEQUENCE(Yi_test[0], pred_per_doc, window_size=-1, rounded=False, print_individual_stats=not summary_only)
         avg_segment_lengths_across_test_data.append(actual_avg_seg_length)
         data['pk'].append(result['pk'])
-        data['wd'].append(result['wd'])
+        data['wd_r'].append(result['wd_r'])
+        data['wd_e'].append(result['wd_e'])
 
     print ">> Summary (%s):" %(type_of_data)
     print "AVG segment length in test data: %f" % (np.mean(avg_segment_lengths_across_test_data))
-    print "WinDiff metric:: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['wd']), np.std(data['wd']), np.min(data['wd']), np.max(data['wd']))
+    print "WinDiff metric (Windiff_r):: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['wd_r']), np.std(data['wd_r']), np.min(data['wd_r']), np.max(data['wd_r']))
+    print "WinDiff metric (Windiff_e):: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['wd_e']), np.std(data['wd_e']), np.min(data['wd_e']), np.max(data['wd_e']))
     print "Pk metric:: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['pk']), np.std(data['pk']), np.min(data['pk']), np.max(data['pk']))
     print('___________________________________')
 
@@ -371,9 +388,15 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
         
         print ">>>>>> Final Testing <<<<<<"
         print ">> ATTENTION weights:"
-        attn_weights = [model.get_layer("encode_left").get_weights(), model.get_layer("encode_right").get_weights()]
-        print attn_weights[0]
-        print attn_weights[1]
+        print "################# Left - attention - weights "
+        attn_weights_left = [model.get_layer("encode-left-attention").get_weights(), model.get_layer("encode-left-attention").get_weights()]
+        print attn_weights_left[0]
+        print attn_weights_left[1]
+          
+        attn_weights_right = [model.get_layer("encode-right-attention").get_weights(), model.get_layer("encode-right-attention").get_weights()]
+        print "################# RIght - attention - weights "
+        print attn_weights_right[0]
+        print attn_weights_right[1]
 
         testing_on_data("Wikipedia", X_test, Y_test, model, batch_size, summary_only=True)
         testing_on_data("Clinical", X_cli, Y_cli, model, batch_size)

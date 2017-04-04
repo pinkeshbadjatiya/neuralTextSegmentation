@@ -1,4 +1,3 @@
-import nltk.data
 import pdb
 
 from encode_tfidf import TFIDF
@@ -18,7 +17,7 @@ import time
 import load_data
 import progbar
 
-AVERAGE_WORDS = 20
+AVERAGE_WORDS = 15
 STATIC_PAD = 1
 
 def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
@@ -100,6 +99,7 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
 
     print "Total samples: %d" %(len(X))
     if shuffle_documents: # Shuffle the X's and Y's if required
+        # Both of them have to be in unison
         X, Y = unison_shuffled_copies(X, Y)
         print "SHUFFLE: Shuffled input document order! (X:",X.shape,", Y:",Y.shape,")"
 
@@ -114,7 +114,6 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
 
         doc_lengths = [len(doc) for doc in X]
         print "Padding sequences. Doc-lengths: Mean=%d, Std=%d" %(np.mean(doc_lengths), np.std(doc_lengths))
-        # Both of them have to be in unison
         X = pad_sequences(X, padding="post", truncating="post", value=0.0, dtype=np.float32)
         Y = pad_sequences(Y, padding="post", truncating="post", value=0.0, dtype=np.float32)
         print "Size of new X(after padding):", X.shape
@@ -126,5 +125,5 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
 
 
 if __name__=="__main__":
-    get_input()
+    get_input(sample_type=2, shuffle_documents=True, pad=False)
     pdb.set_trace()

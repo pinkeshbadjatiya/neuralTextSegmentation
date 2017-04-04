@@ -1,10 +1,14 @@
 import re
 import pdb
-import nltk.data
+
+import nltk
+nltk.data.path.append("../nltk_data")
+
 import os
 import codecs
 
 from multiprocessing import Process, Lock, Queue
+from helper import compute_avg_seg_len
 #import logging
 #logging.basicConfig(level=logging.DEBUG,
 #                    format='(%(threadName)-10s) %(message)s',
@@ -19,6 +23,8 @@ MIN_SENTENCES_IN_PARAGRAPH = -1      # Using the nltk tokenizer to get the appro
 
 INPUT_VECTOR_LENGTH = 10       # Similar to K as discussed with litton, not required if fetching document as a single sequence
 
+
+MIN_TRAIN_AVG_SEGMENT_LENGTH = 25
 
 
 class DataHandler:
@@ -144,7 +150,6 @@ class DataHandler:
                     #print docID, ": Fails at MIN_SENTENCES_IN_PARAGRAPH (", count, "/", MIN_SENTENCES_IN_PARAGRAPH,")"
                     continue
 
-
             best_docs.append(docID)
 
         # Skip the bad documents
@@ -168,6 +173,7 @@ class DataHandler:
         self._create_structured_documents(files)
         self.documents = self.filter_docs()
         sequence_samples = self.sample_creator.create_sequence_samples(self.documents)
+        sequence_samples = self.sample_creator.filter_low_segment_documents(sequence_samples)
         return sample_type, sequence_samples
 
 
@@ -215,6 +221,19 @@ class SampleCreator:
         # Not a split point
         return False
             
+    def filter_low_segment_documents(self, documents):
+        new_documents = []
+        skipped = 0
+        for sample in documents:
+            sentences, groundTruths = zip(*sample)
+            avg_seg = compute_avg_seg_len(groundTruths)
+            if avg_seg >= MIN_TRAIN_AVG_SEGMENT_LENGTH:
+                new_documents.append(sample)
+            else:
+                skipped += 1
+        #    pdb.set_trace()
+        print "Skipped %d documents due to MIN_TRAIN_AVG_SEGMENT_LENGTH=%d" %(skipped, MIN_TRAIN_AVG_SEGMENT_LENGTH)
+        return new_documents
 
     def create_sequence_samples(self, document):
         print "Creating Samples for each document (Document is a sequence of sentences) (NOT separating as paragraph splitting)...."

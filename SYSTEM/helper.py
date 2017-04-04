@@ -23,6 +23,7 @@ def round(arr):
 
 def compute_avg_seg_len(y_true):
     # Assuming segment_length is the no of sentences in a section/segment
+    y_true = np.array(y_true)
     idx = np.where(y_true == 1)[0]
     seg_sizes, seg_count = [], idx.shape[0]
     for i in range(seg_count):
@@ -89,11 +90,12 @@ def windiff_and_pk_metric_ONE_SEQUENCE(y_true, y_pred, window_size=-1, rounded=T
         measurments += 1
 
     ans = {}
-    ans['wd'] = (wd_differences*1.0)/(measurments + 1)
+    ans['wd_r'] = (wd_differences*1.0)/(measurments)
+    ans['wd_e'] = (wd_differences*1.0)/(measurments + 1)
     ans['pk'] = (pk_differences*1.0)/measurments
 
     if print_individual_stats:
-        print ">> X:", y_true.shape, "| Avg_Seg_Length: %f | WinDiff: %f | Pk: %f" %(average_seg_length, ans['wd'], ans['pk'])
+        print ">> X:", y_true.shape, "| Avg_Seg_Length: %f | WinDiff_r: %f | WinDiff_e: %f | Pk: %f" %(average_seg_length, ans['wd_r'], ans['wd_e'], ans['pk'])
 
     return average_seg_length, ans
 

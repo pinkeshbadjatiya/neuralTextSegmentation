@@ -1,6 +1,11 @@
 import gensim
+
+import nltk
+nltk.data.path.append("../nltk_data")
+
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords as s_words
+
 import pdb
 import numpy as np
 import string

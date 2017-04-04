@@ -1,4 +1,7 @@
-import os, pdb, nltk
+import os, pdb
+
+import nltk
+nltk.data.path.append("../nltk_data")
 
 class LoadData:
     DIR="./data/"
@@ -142,7 +145,7 @@ class LoadData:
                 book.append(paragraph[1:])      # Do not add the 1st line as it is the TITLE of the section
             document.append(book)
 
-        print "Total BIOGRAPHY data: %d chapters, %d paragraphs and %d sentences" %(len(document), sum([len(chap) for chap in document]), sum([sum([len(par) for par in chap]) for chap in document]))
+        print "Total FICTION data: %d chapters, %d paragraphs and %d sentences" %(len(document), sum([len(chap) for chap in document]), sum([sum([len(par) for par in chap]) for chap in document]))
         return document
 
     
