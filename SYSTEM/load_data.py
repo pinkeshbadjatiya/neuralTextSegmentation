@@ -10,6 +10,7 @@ class LoadData:
         "clinical": "clinical/",
         "ai": "ai/",
         "biography": "biography/chapters/",
+        "wikipedia": "wiki/"
     }
 
     def __init__(self):
@@ -17,16 +18,59 @@ class LoadData:
         self.documents = []
         self.sent_tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
 
+    ####### WIKIPEDIA DATA ##########################################################################################
+    def load_wikipedia_sequence(self):
+        SAMPLE_TYPE = 7     # 7th sample type
+        doc = self.load_wikipedia()
+        documents = []
+        for wiki_page in doc:
+            sequence = []
+            for par in wiki_page:
+                for i, line in enumerate(par):
+                    sequence.append((line, int(i==0)))
+            documents.append(sequence)
+        return SAMPLE_TYPE, documents   # Return multiple samples with sequences of sentence (each sample is a chapter)
+
+    
+    def load_wikipedia(self):
+        dirname = self.DIR + self.SUB_DIRS['wikipedia']
+        
+        # Use only .ref files
+        files = sorted([dirname+fil for fil in os.listdir(dirname) if fil.endswith(".ref")])
+
+        document = []           # Initialize document
+        for fil in files:
+            page = []
+            with open(fil) as f:
+                data = f.readlines()
+            paragraph = []
+            for line in data:
+                line = line.strip()
+                if line.startswith("======="):
+                    if len(paragraph) > 0:
+                        page.append(paragraph)
+                    paragraph = []
+                else:
+                    paragraph.append(line)
+            if len(paragraph) > 0:
+                page.append(paragraph)
+            document.append(page)
+
+        print "Total WIKIPEDIA(test) data: %d chapters, %d paragraphs and %d sentences" %(len(document), sum([len(chap) for chap in document]), sum([sum([len(par) for par in chap]) for chap in document]))
+        return document
+
     ####### CLINICAL DATA ##########################################################################################
     def load_clinical_sequence(self):
         SAMPLE_TYPE = 4     # 4th sample type
         doc = self.load_clinical()
-        sequence = []
+        documents = []
         for chapter in doc:
+            sequence = []
             for par in chapter:
                 for i, line in enumerate(par):
                     sequence.append((line, int(i==0)))
-        return SAMPLE_TYPE, [sequence]   # Return a single sample with sequences of sentence
+            documents.append(sequence)
+        return SAMPLE_TYPE, documents   # Return multiple samples with sequences of sentence (each sample is a chapter)
 
     
     def load_clinical(self):

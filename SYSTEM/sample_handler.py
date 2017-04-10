@@ -40,9 +40,9 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         sample_type, samples = data_handler.get_sequence_samples(sample_type)
         #sample_type, samples = data_handler.get_sequence_samples_PARALLEL()  # Get samples, each sample is a document (a set of sentences resulting in a sequence)
     elif sample_type == 4:
-        # type4: Clinical sequence of a single sample
-        # X.shape = (1, TOTAL_SENTENCES)
-        # Y.shape = (TOTAL_SENTENCES, 1)
+        # type4: Clinical sequence of a multiple samples
+        # X.shape = (MULTIPLE_SAMPLES, TOTAL_SENTENCES)
+        # Y.shape = (MULTIPLE_SAMPLES, TOTAL_SENTENCES, 1)
         ld = load_data.LoadData()
         sample_type, samples = ld.load_clinical_sequence()
     elif sample_type == 5:
@@ -52,11 +52,18 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         ld = load_data.LoadData()
         sample_type, samples = ld.load_biography_sequence()
     elif sample_type == 6:
-        # type5: Fiction sequence of a multiple documents
+        # type6: Fiction sequence of a multiple documents
         # X.shape = (NO_OF_BOOKS, TOTAL_SENTENCES)
         # Y.shape = (NO_OF_BOOKS, TOTAL_SENTENCES, 1)
         ld = load_data.LoadData()
         sample_type, samples = ld.load_fiction_sequence()
+    elif sample_type == 7:
+        # type7: Wiki sequence of a multiple sample
+        # Data format is just like the clinical sequence as each line is a sentence
+        # X.shape = (MULTIPLE_DOCUMENTS, TOTAL_SENTENCES)
+        # Y.shape = (MULTIPLE_DOCUMENTS, TOTAL_SENTENCES, 1)
+        ld = load_data.LoadData()
+        sample_type, samples = ld.load_wikipedia_sequence()
     else:
         print "NOTE: INVALID SAMPLE_TYPE!"
         return None
@@ -72,26 +79,42 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
 
     X, Y = [], []
     _total_samples,_start_time = len(samples), time.time()
+    #print len(samples)
+    #pdb.set_trace()
     for _idx, sample in enumerate(samples):
         # Each sample is a document
         # Each sample is a list of tuples with each tuple as (sentence, groundTruth)
         sentences, groundTruths = zip(*sample)        # Unpack a sample
 
-        if not _idx%50:
-            progbar.simple_update("Converting doc to martices", _idx+1, _total_samples, time_elapsed=(time.time() - _start_time))
-
-        if sample_type == 1:
-            # Correct groundtruth sync problem here
-            sentences, groundTruths = model.convert_sample_to_vec(sentences, groundTruths)
-        elif sample_type in (2, 3, 4, 5, 6):
-            sentences, groundTruths = model.convert_sequence_sample_to_vec(sentences, groundTruths)
+        ## Create Wikipedia test set
+        CREATE_WIKI_TEST_SET = False
+        if CREATE_WIKI_TEST_SET:
+            wiki_prefix = "wiki_save/wiki_test"
+            if _idx >= 300:
+                break
+            with open(wiki_prefix + "_" + str(_idx + 1) + ".ref", "a") as f:
+                for (_s, _g) in sample:
+                    if _g:
+                        f.write("==========\r\n")
+                    f.write(_s + "\r\n")
+                f.write("==========\r\n")
         else:
-            print "Wrong Sample TYPE"
+            # Traditional code
+            if not _idx%50:
+                progbar.simple_update("Converting doc to martices", _idx+1, _total_samples, time_elapsed=(time.time() - _start_time))
 
-        if sentences is None:
-            continue
-        X.append(sentences)            # X[0].shape = matrix([[1,2,3,4.....]])
-        Y.append(np.asarray(groundTruths))          # Y[0] = [1, 0, 0, ..... 0, 1, 0, 1....]
+            if sample_type == 1:
+                # Correct groundtruth sync problem here
+                sentences, groundTruths = model.convert_sample_to_vec(sentences, groundTruths)
+            elif sample_type in (2, 3, 4, 5, 6, 7):
+                sentences, groundTruths = model.convert_sequence_sample_to_vec(sentences, groundTruths)
+            else:
+                print "Wrong Sample TYPE"
+
+            if sentences is None:
+                continue
+            X.append(sentences)            # X[0].shape = matrix([[1,2,3,4.....]])
+            Y.append(np.asarray(groundTruths))          # Y[0] = [1, 0, 0, ..... 0, 1, 0, 1....]
     progbar.simple_update("Creating a standalone matrix for samples...", -1, -1)
     X, Y = np.asarray(X), np.asarray(Y)
     progbar.end()

@@ -36,6 +36,7 @@ class CustomSent2vec(object):
         self.stopwords = set(s_words.words('english') + [w for w in string.punctuation])
         #self.vectorize = lambda x: self.model[x]
         self.dictionary = Dictionary(300, self.model)
+
         self.AVERAGE_WORDS = 20
 
     def get_dict_object(self):

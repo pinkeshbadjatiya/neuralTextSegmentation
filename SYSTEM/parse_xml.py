@@ -24,7 +24,7 @@ MIN_SENTENCES_IN_PARAGRAPH = -1      # Using the nltk tokenizer to get the appro
 INPUT_VECTOR_LENGTH = 10       # Similar to K as discussed with litton, not required if fetching document as a single sequence
 
 
-MIN_TRAIN_AVG_SEGMENT_LENGTH = 25
+MIN_TRAIN_AVG_SEGMENT_LENGTH = 20
 
 
 class DataHandler:
@@ -35,6 +35,7 @@ class DataHandler:
         self.REGEX_document_end = re.compile(r'</doc>')
 
         #self.WIKI_DOCS = "/home/pinkesh/DATASETS/WIKIPEDIA_DATASET/extracted_WIKIPEDIA/"
+        #self.WIKI_DOCS = "/home/rahulnht/PINKESH_work/wiki_save_XML/"      # Used for reading the files to create WIKIPEDIA-test data
         self.WIKI_DOCS = "/home/rahulnht/PINKESH_work/extracted_WIKIPEDIA/"
         if self.WIKI_DOCS[-1]!="/":
             raise Exception("Check the directory name")
