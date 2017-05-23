@@ -110,17 +110,21 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
     convoluted_left, convoluted_mid, convoluted_right = Merge(mode='concat')(convsL), Merge(mode='concat')(convsM), Merge(mode='concat')(convsR)
     CONV_DIM = sum(conv_hidden_units)
 
+    ####convoluted_mid, convoluted_left, convoluted_right, CONV_DIM = main_input, left_context, right_context, 300
     flat_mid = Flatten()(convoluted_mid)
     encode_mid = Dense(300, name='dense-intermediate-mid-encoder')(flat_mid)
 
     context_encoder_intermediate1 = Bidirectional(LSTM(600, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.3, dropout_U=0.3, return_sequences=True, stateful=False), name='BiLSTM-context-encoder-intermediate1', merge_mode='concat')
     #context_encoder_intermediate2 = Bidirectional(LSTM(500, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.1, dropout_U=0.1, return_sequences=True, stateful=False), name='BiLSTM-context-encoder-intermediate2', merge_mode='concat')
     context_encoder = Bidirectional(LSTM(600, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.3, dropout_U=0.3, return_sequences=True, stateful=False), name='BiLSTM-context-encoder', merge_mode='concat')
+    ####context_encoder = Bidirectional(LSTM(600, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.3, dropout_U=0.3, return_sequences=False, stateful=False), name='BiLSTM-context-encoder', merge_mode='concat')
 
     #encode_left = Attention(name='encode-left-attention')(context_encoder(context_encoder_intermediate1(convoluted_left)))
     #encode_right = Attention(name='encode-right-attention')(context_encoder(context_encoder_intermediate1(convoluted_right)))
     encode_left = AttentionWithContext(name='encode-left-attention')(context_encoder(context_encoder_intermediate1(convoluted_left)))
     encode_right = AttentionWithContext(name='encode-right-attention')(context_encoder(context_encoder_intermediate1(convoluted_right)))
+    ####encode_left = context_encoder(context_encoder_intermediate1(convoluted_left))
+    ####encode_right = context_encoder(context_encoder_intermediate1(convoluted_right))
     encode_left_drop, encode_mid_drop, encode_right_drop = Dropout(0.3)(encode_left), Dropout(0.2)(encode_mid), Dropout(0.3)(encode_right)
 
     encoded_info = Merge(mode='concat', name='encode_info')([encode_left_drop, encode_mid_drop, encode_right_drop])
@@ -252,6 +256,7 @@ def custom_fit(X_train, Y_train, X_test, Y_test, model, batch_size, epochs=10):
     if LOAD_SAVED_MODEL_AND_CONTINUE_TRAIN:   # If we have saved model, then continue from the last epoch where we stopped
         start_epoch = saved_model_epoch_done  # The epoch count is zero indexed in TRAIN, while the count in saved file is 1 indexed
 
+    print_iter_count = 0
     for epoch in range(start_epoch, epochs):
         mean_tr_acc, mean_tr_loss, mean_tr_rec = [], [], []
         rLoss, rRecall, rAcc = 0,0,0 # Running parameters for printing while training
@@ -322,8 +327,92 @@ def custom_fit(X_train, Y_train, X_test, Y_test, model, batch_size, epochs=10):
     print('loss testing = {}'.format(np.mean(mean_te_loss)))
     
 
+def save_predictions(type_of_data, X_test, Y_test, model, batch_size, summary_only=False):
+    # Predicting
+    print "====================== %s ======================" %(type_of_data)
+    print "GET PREDICTIONS... (SEPARATELY FOR EACH DOCUMENT)"
+    data = {
+        'wd_r': [],
+        'wd_e': [],
+        'pk': []
+    }
+    doc_idx = 18
+    avg_segment_lengths_across_test_data = [] # Average segment length across the documents
+    predictions_return = []
+    zipped = zip(X_test, Y_test)
+    for i, (Xi_test, Yi_test) in enumerate(zipped):
 
-def testing_on_data(type_of_data, X_test, Y_test, model, batch_size, summary_only=False):
+        if i != doc_idx:
+            continue
+
+        print Xi_test.shape
+        pred_per_doc = []
+        Xi_test, Yi_test = Xi_test.reshape((1,) + Xi_test.shape), Yi_test.reshape((1,) + Yi_test.shape)   # Convert to format of 1 document
+        for batch_X_left, batch_X_mid, batch_X_right, batch_Y_mid in batch_gen_consecutive_context_segments_from_big_seq("test", Xi_test, Yi_test, batch_size, ONE_SIDE_CONTEXT_SIZE):
+            batch_y_pred = model.predict_on_batch([batch_X_left, batch_X_mid, batch_X_right])
+            pred_per_doc.append(batch_y_pred)
+
+        if not len(pred_per_doc): # batch generator might drop a few documents
+            continue
+
+        #rounded = np.round(pred_per_doc)
+        pred_per_doc = np.concatenate(pred_per_doc, axis=0)
+        #return pred_per_doc
+        predictions_return.append(pred_per_doc)
+        actual_avg_seg_length, result = helper.windiff_and_pk_metric_ONE_SEQUENCE(Yi_test[0], pred_per_doc, window_size=-1, rounded=False, print_individual_stats=not summary_only)
+        avg_segment_lengths_across_test_data.append(actual_avg_seg_length)
+        data['pk'].append(result['pk'])
+        data['wd_r'].append(result['wd_r'])
+        data['wd_e'].append(result['wd_e'])
+
+        print "WD: %f, PK: %f" %(result['wd_r'], result['pk'])
+        # Save for visualization
+        #rounded_per_doc = np.round(pred_per_doc)
+        rounded_per_doc = pred_per_doc
+        output = ["ref,hyp"]
+        for (ref, hyp) in zip(Y_test[doc_idx], rounded_per_doc):
+            output.append(str(int(ref[0])) + "," + str(hyp[0]))
+        file_name = "prediction_output_save.csv"
+        with open(file_name, "a") as f:
+            for line in output:
+                f.write(line + "\r\n")
+        print "Written document index: `%d` to file: `%s`" %(doc_idx, file_name)
+        return
+
+
+def RANDOM_testing_on_data(type_of_data, X_test, Y_test, model, batch_size, summary_only=False, visualize=False):
+    # Predicting
+    print "====================== %s ======================" %(type_of_data)
+    print "Predicting... (SEPARATELY FOR EACH DOCUMENT)"
+    data = {
+        'wd_r': [],
+        'wd_e': [],
+        'pk': []
+    }
+    avg_segment_lengths_across_test_data = [] # Average segment length across the documents
+    for Xi_test, Yi_test in zip(X_test, Y_test):
+        pred_per_doc = []
+        Xi_test, Yi_test = Xi_test.reshape((1,) + Xi_test.shape), Yi_test.reshape((1,) + Yi_test.shape)   # Convert to format of 1 document
+
+        original_yi = np.copy(Yi_test[0])
+        pred_per_doc = np.copy(Yi_test[0])
+        np.random.shuffle(pred_per_doc)
+
+        actual_avg_seg_length, result = helper.windiff_and_pk_metric_ONE_SEQUENCE(original_yi, pred_per_doc, window_size=-1, rounded=False, print_individual_stats=not summary_only)
+        avg_segment_lengths_across_test_data.append(actual_avg_seg_length)
+        data['pk'].append(result['pk'])
+        data['wd_r'].append(result['wd_r'])
+        data['wd_e'].append(result['wd_e'])
+
+    print ">> Summary (%s):" %(type_of_data)
+    print "AVG segment length in test data: %f, std: %f" % (np.mean(avg_segment_lengths_across_test_data), np.std(avg_segment_lengths_across_test_data))
+    print "WinDiff metric (Windiff_r):: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['wd_r']), np.std(data['wd_r']), np.min(data['wd_r']), np.max(data['wd_r']))
+    print "WinDiff metric (Windiff_e):: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['wd_e']), np.std(data['wd_e']), np.min(data['wd_e']), np.max(data['wd_e']))
+    print "Pk metric:: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['pk']), np.std(data['pk']), np.min(data['pk']), np.max(data['pk']))
+    print('___________________________________')
+
+
+def testing_on_data(type_of_data, X_test, Y_test, model, batch_size, summary_only=False, visualize=False):
     # Predicting
     print "====================== %s ======================" %(type_of_data)
     print "Predicting... (SEPARATELY FOR EACH DOCUMENT)"
@@ -345,6 +434,9 @@ def testing_on_data(type_of_data, X_test, Y_test, model, batch_size, summary_onl
 
         #rounded = np.round(pred_per_doc)
         pred_per_doc = np.concatenate(pred_per_doc, axis=0)
+        if visualize:
+            print ">>>>> VISUALIZE <<<<<<"
+            pdb.set_trace()
         actual_avg_seg_length, result = helper.windiff_and_pk_metric_ONE_SEQUENCE(Yi_test[0], pred_per_doc, window_size=-1, rounded=False, print_individual_stats=not summary_only)
         avg_segment_lengths_across_test_data.append(actual_avg_seg_length)
         data['pk'].append(result['pk'])
@@ -390,25 +482,25 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
 
     if which_model == 2:
         #custom_fit(X_train, Y_train, X_test, Y_test, model=model, batch_size=batch_size, epochs=epochs)
-        custom_fit(X_train, Y_train, X_test, Y_test, model=model, batch_size=batch_size, epochs=epochs)
+        #custom_fit(X_train, Y_train, X_test, Y_test, model=model, batch_size=batch_size, epochs=epochs)
         
         print ">>>>>> Final Testing <<<<<<"
-        print ">> ATTENTION weights:"
-        print "################# Left - attention - weights "
-        attn_weights_left = [model.get_layer("encode-left-attention").get_weights(), model.get_layer("encode-left-attention").get_weights()]
-        print attn_weights_left[0]
-        print attn_weights_left[1]
-          
-        attn_weights_right = [model.get_layer("encode-right-attention").get_weights(), model.get_layer("encode-right-attention").get_weights()]
-        print "################# RIght - attention - weights "
-        print attn_weights_right[0]
-        print attn_weights_right[1]
+        #print ">> ATTENTION weights:"
+        #print "################# Left - attention - weights "
+        #attn_weights_left = [model.get_layer("encode-left-attention").get_weights(), model.get_layer("encode-left-attention").get_weights()]
+        #print attn_weights_left[0]
+        #print attn_weights_left[1]
+        #  
+        #attn_weights_right = [model.get_layer("encode-right-attention").get_weights(), model.get_layer("encode-right-attention").get_weights()]
+        #print "################# RIght - attention - weights "
+        #print attn_weights_right[0]
+        #print attn_weights_right[1]
 
-        testing_on_data("Wikipedia(DEVELOPMENT)", X_test, Y_test, model, batch_size, summary_only=True)
-        testing_on_data("Clinical", X_cli, Y_cli, model, batch_size, summary_only=True)
-        testing_on_data("Biography", X_bio, Y_bio, model, batch_size)
-        testing_on_data("Fiction", X_fic, Y_fic, model, batch_size, summary_only=True)
-        testing_on_data("Wikipdia(BENCHMARK)", X_wikitest, Y_wikitest, model, batch_size, summary_only=True)
+        RANDOM_testing_on_data("Wikipedia(DEVELOPMENT)", X_test, Y_test, model, batch_size, summary_only=True, visualize=True)
+        RANDOM_testing_on_data("Clinical", X_cli, Y_cli, model, batch_size, summary_only=True, visualize=True)
+        #testing_on_data("Biography", X_bio, Y_bio, model, batch_size)
+        RANDOM_testing_on_data("Fiction", X_fic, Y_fic, model, batch_size, summary_only=True, visualize=True)
+        RANDOM_testing_on_data("Wikipedia(BENCHMARK)", X_wikitest, Y_wikitest, model, batch_size, summary_only=True, visualize=True)
 
         
 #    elif which_modle == 1:
@@ -436,7 +528,7 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
 #        print result
 
 
-    pdb.set_trace()
+    #pdb.set_trace()
 
     #rounded = [round(x) for x in pred]
     
@@ -470,6 +562,7 @@ if __name__ == "__main__":
 
     dictionary_object = trained_sample_handler.dictionary
     embedding_W = dictionary_object.get_embedding_weights()
+    ####embedding_W = None
 
     print "#####################################################################"
     print "VOCAB_SIZE:",  len(dictionary_object.word2id_dic)

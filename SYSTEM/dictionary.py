@@ -58,7 +58,7 @@ class Dictionary:
                 lm_word = self.lemmatizer.lemmatize(word)
                 if lm_word not in self.word2vec:
                     return self.word2id_dic['<UNK>']
-                print "Lemmatized: %s ---> %s" %(word, lm_word)
+                #print "Lemmatized: %s ---> %s" %(word, lm_word)
                 word = lm_word
                 if word in self.word2id_dic:
                     return self.word2id_dic[word]

@@ -78,9 +78,11 @@ def isINT(w):
 # print(tfidf[new_vec]) # step 2 -- use the model to transform vectors
 
 
-class TFIDF(object):
+class TFIDFweightedMeanWord2vec(object):
     def __init__(self, samples):
         # tfidf.shape = (no_of_documents x vocab_size)
+        self.model = gensim.models.KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
+
         self.stopwords = set(s_words.words('english') + [w for w in string.punctuation])
         self.WIKI_SAVED_DATA_DIR = "/home/pinkesh/250GB_disk/wiki_en_WITH_ALL_TOKENS/"
         # Saved wiki data using gensim script
@@ -100,6 +102,8 @@ class TFIDF(object):
         once_ids = [tokenid for tokenid, docfreq in iteritems(self.dictionary.dfs) if docfreq == 1]
         self.dictionary.filter_tokens(stop_ids + once_ids)  # remove stop words and words that appear only once
         self.dictionary.compactify()  # remove gaps in id sequence after words that were removed
+
+        self.id2word = {v:k for k,v in self.dictionary.token2id.iteritems()}
         self.raw_docs = [self.dictionary.doc2bow(doc) for doc in self.raw_docs]
         self.tfidf = models.TfidfModel(self.raw_docs)
 
@@ -131,7 +135,7 @@ class TFIDF(object):
         sample_vec, g_ths = [], []
         for i, sentence in enumerate(sample):
             sent_word = []
-            #vec = []
+            vec = []
             for w in word_tokenize(codecs.decode(sentence, "utf-8")):
                 w = w.lower()
                 if (w not in self.stopwords) and (not isINT(w)):
@@ -144,17 +148,24 @@ class TFIDF(object):
             if len(sentence) > 0:
                 sent_bow = self.dictionary.doc2bow(sent_word)
                 sent_tfidf = self.tfidf[sent_bow]
-                #sample_vec.append(np.mean(vec, axis=0))
                 if len(sent_tfidf) > 0:
-                    sample_vec.append([b for (a,b) in sent_tfidf])
-                    g_ths.append(groundTruths[i])
+                    #sample_vec.append([b for (a,b) in sent_tfidf])
+                    for (a,b) in sent_tfidf: 
+                        try:
+                            vec.append(self.model[self.id2word[a]]*b)
+                        except KeyError:
+                            # Skip all the words whose vector representation is not present in the word2vec pre-trained model
+                            continue
+                    if len(vec) > 0:
+                        sample_vec.append(np.mean(vec, axis=0))
+                        #print len(sample_vec), np.mean(vec,axis=0).shape, sample_vec[-1].shape
+                        #pdb.set_trace()
+                        g_ths.append(groundTruths[i])
 
-        sample_vec = pad_sequences(sample_vec, maxlen=AVERAGE_WORDS_IN_SENTENCE, padding="post", truncating="post", value=0.0, dtype=np.float32)
-        #Y = pad_sequences(Y, maxlen=AVERAGE_WORDS, padding="post", truncating="post", value=0.0, dtype=np.float32)
+        #sample_vec = pad_sequences(sample_vec, maxlen=AVERAGE_WORDS_IN_SENTENCE, padding="post", truncating="post", value=0.0, dtype=np.float32)
 
         # Check vstack() or hstack()
         return np.asarray(sample_vec), np.asarray(g_ths).reshape((len(g_ths), 1)) 
-  
     
     def convert_sample_to_vec(self, sample):
         # Convert a whole sample into a vectorized sample directly to be fed to the classifier

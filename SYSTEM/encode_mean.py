@@ -19,9 +19,12 @@ def isINT(w):
 
 class MeanWord2vec(object):
     def __init__(self):
-        self.model = gensim.models.Word2Vec.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
+        self.model = gensim.models.KeyedVectors.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
+        #self.model = gensim.models.Word2Vec.load_word2vec_format('GoogleNews-vectors-negative300.bin', binary=True)
         self.stopwords = set(s_words.words('english') + [w for w in string.punctuation])
         self.vectorize = lambda x: self.model[x]
+        self.AVERAGE_WORDS = 20
+
 
     def convert_sequence_sample_to_vec(self, sample, groundTruths):
         """ For type2 samples

@@ -43,14 +43,16 @@ class DataHandler:
         self.sentence_tokenizer = nltk.data.load("tokenizers/punkt/english.pickle")
         self.sample_creator = SampleCreator()
 
-        #self.PROCESS_MAX_FILES = -1
+        self.PROCESS_MAX_FILES = -1
         #self.PROCESS_MAX_FILES = 5000
         #self.PROCESS_MAX_FILES = 4400
         #self.PROCESS_MAX_FILES = 4000
         #self.PROCESS_MAX_FILES = 1500
         #self.PROCESS_MAX_FILES = 900
         #self.PROCESS_MAX_FILES = 800
+        #self.PROCESS_MAX_FILES = 400
         self.PROCESS_MAX_FILES = 200
+        #self.PROCESS_MAX_FILES = 100
         #self.PROCESS_MAX_FILES = 50
         #self.PROCESS_MAX_FILES = 20
         #self.PROCESS_MAX_FILES = 10

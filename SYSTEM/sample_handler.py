@@ -2,6 +2,7 @@ import pdb
 
 from encode_tfidf import TFIDF
 from encode_mean import MeanWord2vec
+from encode_tfidf_mean_final import TFIDFweightedMeanWord2vec
 from encode_2d_repr import CustomSent2vec
 
 from helper import unison_shuffled_copies
@@ -73,8 +74,9 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
 
     model = trained_sent2vec_model
     if not trained_sent2vec_model:
-        #model = TFIDF()
+        #model = TFIDF(samples)
         #model = MeanWord2vec()
+        #model = TFIDFweightedMeanWord2vec(samples)
         model = CustomSent2vec()
 
     X, Y = [], []
@@ -130,6 +132,8 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         print "NOTE: Sample type2 requires PADDING!"
 
     if pad:
+        #### THIS PAD is messy!!!!
+        ### Check once before padding
         if STATIC_PAD:
             max_len = AVERAGE_WORDS
         else:
@@ -139,6 +143,7 @@ def get_input(sample_type, shuffle_documents, pad, trained_sent2vec_model=None):
         print "Padding sequences. Doc-lengths: Mean=%d, Std=%d" %(np.mean(doc_lengths), np.std(doc_lengths))
         X = pad_sequences(X, padding="post", truncating="post", value=0.0, dtype=np.float32)
         Y = pad_sequences(Y, padding="post", truncating="post", value=0.0, dtype=np.float32)
+
         print "Size of new X(after padding):", X.shape
 
     return sample_type, X, Y, model

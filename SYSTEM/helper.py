@@ -31,6 +31,9 @@ def compute_avg_seg_len(y_true):
             seg_sizes.append(y_true.shape[0] - idx[i])
         else:
             seg_sizes.append(idx[i+1] - idx[i])
+    #print seg_sizes, np.mean(seg_sizes)
+    if not len(seg_sizes):
+        return 20.0
     return np.mean(seg_sizes)
 
 
@@ -51,7 +54,14 @@ def windiff_and_pk_metric_ONE_SEQUENCE(y_true, y_pred, window_size=-1, rounded=T
         window_size = int(average_seg_length * 0.5)   # WindowSize is equal to 1/2 of average window size of that document
 
     lenn = y_pred.shape[0]
+    CUTOFF_VALUE=0.1
     if not rounded:
+        #for i in range(y_pred.shape[0]):
+        #    if y_pred[i][0] > CUTOFF_VALUE:
+        #        y_pred[i][0] = 1
+        #    else:
+        #        y_pred[i][0] = 0
+
         y_pred = round(y_pred)
 
     # Convert all the values in single arrays for easy of comparisons and indexing
