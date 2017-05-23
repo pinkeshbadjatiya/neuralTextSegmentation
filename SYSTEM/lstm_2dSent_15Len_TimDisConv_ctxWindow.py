@@ -322,8 +322,61 @@ def custom_fit(X_train, Y_train, X_test, Y_test, model, batch_size, epochs=10):
     print('loss testing = {}'.format(np.mean(mean_te_loss)))
     
 
+def save_predictions(type_of_data, X_test, Y_test, model, batch_size, summary_only=False):
+    # Predicting
+    print "====================== %s ======================" %(type_of_data)
+    print "GET PREDICTIONS... (SEPARATELY FOR EACH DOCUMENT)"
+    data = {
+        'wd_r': [],
+        'wd_e': [],
+        'pk': []
+    }
+    doc_idx = 18
+    avg_segment_lengths_across_test_data = [] # Average segment length across the documents
+    predictions_return = []
+    zipped = zip(X_test, Y_test)
+    for i, (Xi_test, Yi_test) in enumerate(zipped):
 
-def testing_on_data(type_of_data, X_test, Y_test, model, batch_size, summary_only=False):
+        if i != doc_idx:
+            continue
+
+        print Xi_test.shape
+        pred_per_doc = []
+        Xi_test, Yi_test = Xi_test.reshape((1,) + Xi_test.shape), Yi_test.reshape((1,) + Yi_test.shape)   # Convert to format of 1 document
+        for batch_X_left, batch_X_mid, batch_X_right, batch_Y_mid in batch_gen_consecutive_context_segments_from_big_seq("test", Xi_test, Yi_test, batch_size, ONE_SIDE_CONTEXT_SIZE):
+            batch_y_pred = model.predict_on_batch([batch_X_left, batch_X_mid, batch_X_right])
+            pred_per_doc.append(batch_y_pred)
+
+        if not len(pred_per_doc): # batch generator might drop a few documents
+            continue
+
+        #rounded = np.round(pred_per_doc)
+        pred_per_doc = np.concatenate(pred_per_doc, axis=0)
+        #return pred_per_doc
+        predictions_return.append(pred_per_doc)
+        actual_avg_seg_length, result = helper.windiff_and_pk_metric_ONE_SEQUENCE(Yi_test[0], pred_per_doc, window_size=-1, rounded=False, print_individual_stats=not summary_only)
+        avg_segment_lengths_across_test_data.append(actual_avg_seg_length)
+        data['pk'].append(result['pk'])
+        data['wd_r'].append(result['wd_r'])
+        data['wd_e'].append(result['wd_e'])
+
+        print "WD: %f, PK: %f" %(result['wd_r'], result['pk'])
+        # Save for visualization
+        #rounded_per_doc = np.round(pred_per_doc)
+        rounded_per_doc = pred_per_doc
+        output = ["ref,hyp"]
+        for (ref, hyp) in zip(Y_test[doc_idx], rounded_per_doc):
+            output.append(str(int(ref[0])) + "," + str(hyp[0]))
+        file_name = "prediction_output_save.csv"
+        with open(file_name, "a") as f:
+            for line in output:
+                f.write(line + "\r\n")
+        print "Written document index: `%d` to file: `%s`" %(doc_idx, file_name)
+        return
+
+
+
+def testing_on_data(type_of_data, X_test, Y_test, model, batch_size, summary_only=False, visualize=False):
     # Predicting
     print "====================== %s ======================" %(type_of_data)
     print "Predicting... (SEPARATELY FOR EACH DOCUMENT)"
