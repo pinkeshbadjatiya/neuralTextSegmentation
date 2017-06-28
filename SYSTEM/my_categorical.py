@@ -35,8 +35,8 @@ def w_binary_crossentropy(target, output):
     # Weighted binary_crossentropy
     # Where W is the loss penalty factor when a split sentence is classified as a normal sentence
     freq = {
-        0: 90,
-        1: 10
+        0: 85,
+        1: 15
     }
     # default value was 85-15
 
