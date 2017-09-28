@@ -35,8 +35,7 @@ class DataHandler:
         self.REGEX_document_end = re.compile(r'</doc>')
 
         #self.WIKI_DOCS = "/home/pinkesh/DATASETS/WIKIPEDIA_DATASET/extracted_WIKIPEDIA/"
-        #self.WIKI_DOCS = "/home/rahulnht/PINKESH_work/wiki_save_XML/"      # Used for reading the files to create WIKIPEDIA-test data
-        self.WIKI_DOCS = "/home/rahulnht/PINKESH_work/extracted_WIKIPEDIA/"
+        self.WIKI_DOCS = "/home/pinkesh.badjatiya/TopicSegmentation_ECIR/extracted_WIKIPEDIA/"
         if self.WIKI_DOCS[-1]!="/":
             raise Exception("Check the directory name")
 

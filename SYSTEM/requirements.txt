@@ -1,6 +1,6 @@
 tabulate
 numpy
-keras
+keras==1.2.2
 sklearn
 gensim
 nltk
