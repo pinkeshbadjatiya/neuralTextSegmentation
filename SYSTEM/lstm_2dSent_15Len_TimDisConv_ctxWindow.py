@@ -42,7 +42,7 @@ SCALE_LOSS_FUN = True
 
 # SEQUENCES_LENGTH_FOR_TRAINING = 40
 
-ONE_SIDE_CONTEXT_SIZE = 15
+ONE_SIDE_CONTEXT_SIZE = 10
 
 LOAD_SAVED_MODEL_AND_CONTINUE_TRAIN = False
 SAVE_MODEL_AFTER_EACH_EPOCH = False
@@ -300,6 +300,9 @@ def custom_fit(X_train, Y_train, X_test, Y_test, model, batch_size, epochs=10):
                 out = raw_input('Enter "pdb" to get prompt or ENTER to exit.> ')
                 if out == "pdb":
                     pdb.set_trace()
+            except Exception as e:
+                print e
+                print ">>>>> Is it intentional ?"
 
         progbar.end()
         if SAVE_MODEL_AFTER_EACH_EPOCH:
@@ -318,19 +321,20 @@ def custom_fit(X_train, Y_train, X_test, Y_test, model, batch_size, epochs=10):
     
         print('___________________________________')
     
-    # Testing
-    print "####################################################################"
-    print ">> (TEST) >> Testing, X:", X_test.shape, "Y:", Y_test.shape
-    mean_te_acc, mean_te_loss, mean_te_rec = [], [], []
-    for batch_X_left, batch_X_mid, batch_X_right, batch_Y_mid in batch_gen_consecutive_context_segments_from_big_seq("test", X_test, Y_test, batch_size, ONE_SIDE_CONTEXT_SIZE):
-        te_loss, te_acc, te_rec = model.test_on_batch([batch_X_left, batch_X_mid, batch_X_right], batch_Y_mid)
-        mean_te_acc.append(te_acc)
-        mean_te_loss.append(te_loss)
-        mean_te_rec.append(te_rec)
+        # Testing
+        print "####################################################################"
+        print ">> (TEST - after %d/%d epoch) >> Testing, X:"%(epoch+1, epochs), X_test.shape, "Y:", Y_test.shape
+        mean_te_acc, mean_te_loss, mean_te_rec = [], [], []
+        for batch_X_left, batch_X_mid, batch_X_right, batch_Y_mid in batch_gen_consecutive_context_segments_from_big_seq("test", X_test, Y_test, batch_size, ONE_SIDE_CONTEXT_SIZE):
+            batch_Y_mid = to_categorical(batch_Y_mid, nb_classes=2)
+            te_loss, te_acc, te_rec = model.test_on_batch([batch_X_left, batch_X_mid, batch_X_right], batch_Y_mid)
+            mean_te_acc.append(te_acc)
+            mean_te_loss.append(te_loss)
+            mean_te_rec.append(te_rec)
 
-    print('accuracy testing = {}'.format(np.mean(mean_te_acc)))
-    print('recall testing = {}'.format(np.mean(mean_te_rec)))
-    print('loss testing = {}'.format(np.mean(mean_te_loss)))
+        print('accuracy testing = {}'.format(np.mean(mean_te_acc)))
+        print('recall testing = {}'.format(np.mean(mean_te_rec)))
+        print('loss testing = {}'.format(np.mean(mean_te_loss)))
     
 
 def save_predictions(type_of_data, X_test, Y_test, model, batch_size, summary_only=False):
@@ -424,7 +428,7 @@ def testing_on_data(type_of_data, X_test, Y_test, model, batch_size, summary_onl
     print ">> Summary (%s):" %(type_of_data)
     print "AVG segment length in test data: %f, std: %f" % (np.mean(avg_segment_lengths_across_test_data), np.std(avg_segment_lengths_across_test_data))
     print "WinDiff metric (Windiff_r):: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['wd_r']), np.std(data['wd_r']), np.min(data['wd_r']), np.max(data['wd_r']))
-    print "WinDiff metric (Windiff_e):: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['wd_e']), np.std(data['wd_e']), np.min(data['wd_e']), np.max(data['wd_e']))
+    #print "WinDiff metric (Windiff_e):: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['wd_e']), np.std(data['wd_e']), np.min(data['wd_e']), np.max(data['wd_e']))
     print "Pk metric:: avg: %f | std: %f | min: %f | max: %f" %(np.mean(data['pk']), np.std(data['pk']), np.min(data['pk']), np.max(data['pk']))
     print('___________________________________')
 
@@ -474,11 +478,11 @@ def train_LSTM(X, Y, model, embedding_W, train_split=0.8, epochs=10, batch_size=
         #print attn_weights_right[0]
         #print attn_weights_right[1]
 
-        testing_on_data("Wikipedia(DEVELOPMENT)", X_test, Y_test, model, batch_size, summary_only=True, visualize=True)
-        testing_on_data("Clinical", X_cli, Y_cli, model, batch_size, summary_only=True, visualize=True)
+        testing_on_data("Wikipedia(DEVELOPMENT)", X_test, Y_test, model, batch_size, summary_only=True, visualize=False)
+        testing_on_data("Clinical", X_cli, Y_cli, model, batch_size, summary_only=True, visualize=False)
         #testing_on_data("Biography", X_bio, Y_bio, model, batch_size)
-        testing_on_data("Fiction", X_fic, Y_fic, model, batch_size, summary_only=True, visualize=True)
-        testing_on_data("Wikipedia(BENCHMARK)", X_wikitest, Y_wikitest, model, batch_size, summary_only=True, visualize=True)
+        testing_on_data("Fiction", X_fic, Y_fic, model, batch_size, summary_only=True, visualize=False)
+        testing_on_data("Wikipedia(BENCHMARK)", X_wikitest, Y_wikitest, model, batch_size, summary_only=True, visualize=False)
 
         
 #    elif which_modle == 1:
@@ -526,13 +530,9 @@ if __name__ == "__main__":
     #SAMPLE_TYPE_bio, X_bio, Y_bio, trained_sample_handler = get_input(sample_type=5, shuffle_documents=False, pad=False, trained_sent2vec_model=trained_sample_handler)
     #NO_OF_SAMPLES, MAX_SEQUENCE_LENGTH, EMBEDDING_DIM = X_bio.shape[0], -1, X_bio[0].shape[1]          #MAX_SEQUENCE_LENGTH is is already padded
     
-    # Clinical - Only for testing
+    # Clinical, Fiction, Wikipedia - Only for testing
     SAMPLE_TYPE_cli, X_cli, Y_cli, trained_sample_handler = get_input(sample_type=4, shuffle_documents=False, pad=False, trained_sent2vec_model=trained_sample_handler)
-    
-    # Fiction - Only for testing
     SAMPLE_TYPE_fic, X_fic, Y_fic, trained_sample_handler = get_input(sample_type=6, shuffle_documents=False, pad=False, trained_sent2vec_model=trained_sample_handler)
-
-    # Wikipedia - Only for testing
     SAMPLE_TYPE_wikitest, X_wikitest, Y_wikitest, trained_sample_handler = get_input(sample_type=7, shuffle_documents=False, pad=False, trained_sent2vec_model=trained_sample_handler)
     
     #print "Check data type"
@@ -553,7 +553,7 @@ if __name__ == "__main__":
         model = lstm_model(-1, EMBEDDING_DIM, embedding_W, len(dictionary_object.word2id_dic))
         ####model = lstm_model(-1, EMBEDDING_DIM, embedding_W, None)
 
-    train_LSTM(X_wiki, Y_wiki, model, embedding_W, train_split=0.8, epochs=17, batch_size=40)
+    train_LSTM(X_wiki, Y_wiki, model, None, train_split=0.8, epochs=30, batch_size=40)
     ##train_LSTM(X_bio, Y_bio, model, embedding_W, train_split=0.7, epochs=1, batch_size=32)
 
     # Context variation experiment

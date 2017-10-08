@@ -20,6 +20,7 @@ import math
 import helper
 from sample_handler import get_input
 
+from baselines_deepNN import batch_gen_sentences_without_context
 
 SAMPLE_TYPE_cli, X_cli, Y_cli, trained_sample_handler = None, None, None, None
 SAMPLE_TYPE_wiki, X_wiki, Y_wiki = None, None, None
@@ -79,7 +80,7 @@ def lstm_model(sequences_length_for_training, embedding_dim, embedding_matrix, v
     dense_out = Dense(300)(decoded_drop)
     dense_out_drop = Dropout(0.3)(dense_out)
 
-    output = TimeDistributed(Dense(1, activation='sigmoid'))(dense_out_drop)
+    output = TimeDistributed(Dense(2, activation='sigmoid'))(dense_out_drop)
     model = Model(input=[main_input], output=output)
     model.layers[1].trainable = False
     model.compile(loss=w_binary_crossentropy, optimizer='rmsprop', metrics=['accuracy', 'recall'])

@@ -79,7 +79,7 @@ def baseline_perceptron(sequence_len):
     encode_2 = Dense(300, name='dense-2')(drop_out_1)
     drop_out_2 = Dropout(0.3)(encode_2)
 
-    encode_3 = Dense(300, name='dense-2')(drop_out_2)
+    encode_3 = Dense(300, name='dense-3')(drop_out_2)
     drop_out_3 = Dropout(0.3)(encode_3)
 
     output = Dense(2, activation='sigmoid')(drop_out_3)
@@ -92,59 +92,30 @@ def baseline_perceptron(sequence_len):
     return model
 
 
-def baseline_CNN(sequences_length_for_training, embedding_dim, embedding_matrix, vocab_size):
+def baseline_stacked_LSTM(sequences_length_for_training, embedding_dim, embedding_matrix, vocab_size):
 
     which_model = 2
 
     print 'Build MAIN model...'
-    ngram_filters = [2, 3, 4, 5]
-    conv_hidden_units = [200, 200, 200, 200]
-    
     main_input = Input(shape=(embedding_dim,), dtype='float32', name='main-input')
 
     main_input_embedder = Embedding(vocab_size + 1, GLOVE_EMBEDDING_DIM, weights=[embedding_matrix], input_length=embedding_dim, init='uniform')
     embedded_input_main = main_input_embedder(main_input)
+    lstm_out1 = LSTM(400, input_shape=(20, GLOVE_EMBEDDING_DIM), return_sequences=True)(embedded_input_main)
+    lstm_out2 = LSTM(400, input_shape=(20, GLOVE_EMBEDDING_DIM))(lstm_out1)
 
-    convsM = []
-    for n_gram, hidden_units in zip(ngram_filters, conv_hidden_units):
-        conv_layer = Convolution1D(nb_filter=hidden_units,
-                             filter_length=n_gram,
-                             border_mode='same',
-                             #border_mode='valid',
-                             activation='tanh', name='Convolution-'+str(n_gram)+"gram")
-        mid = conv_layer(embedded_input_main)
+    encode_mid_drop = Dropout(0.2)(lstm_out2)
 
-        # Use Flatten() instead of MaxPooling()
-        #flat_M = TimeDistributed(Flatten(), name='TD-flatten-mid-'+str(n_gram)+"gram")(mid)
-        #convsM.append(flat_M)
-
-        # Use GlobalMaxPooling1D() instead of Flatten()
-        pool_M = GlobalMaxPooling1D()(mid)
-        convsM.append(pool_M)
-
-    convoluted_mid = Merge(mode='concat')(convsM)
-    CONV_DIM = sum(conv_hidden_units)
-
-    ####convoluted_mid, convoluted_left, convoluted_right, CONV_DIM = main_input, left_context, right_context, 300
-    #flat_mid = Flatten()(convoluted_mid)
-    encode_mid = Dense(300, name='dense-intermediate-mid-encoder')(convoluted_mid)
-
-    #context_encoder_intermediate1 = LSTM(600, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.3, dropout_U=0.3, return_sequences=True, stateful=False)
-    #context_encoder = LSTM(600, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.3, dropout_U=0.3, return_sequences=True, stateful=False)
-    #context_encoder_intermediate1 = Bidirectional(LSTM(600, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.3, dropout_U=0.3, return_sequences=True, stateful=False), name='BiLSTM-context-encoder-intermediate1', merge_mode='concat')
-    #context_encoder = Bidirectional(LSTM(600, input_shape=(ONE_SIDE_CONTEXT_SIZE, CONV_DIM), consume_less='gpu', dropout_W=0.3, dropout_U=0.3, return_sequences=True, stateful=False), name='BiLSTM-context-encoder', merge_mode='concat')
-    ####encode_left = context_encoder(context_encoder_intermediate1(convoluted_left))
+    decoded1 = Dense(400, name='decoded1')(encode_mid_drop)
+    decoded_drop1 = Dropout(0.3, name='decoded_drop1')(decoded1)
+    decoded2 = Dense(400, name='decoded2')(decoded_drop1)
+    decoded_drop2 = Dropout(0.3, name='decoded_drop2')(decoded2)
     
-    encode_mid_drop = Dropout(0.2)(encode_mid)
-
-    decoded = Dense(300, name='decoded')(encode_mid_drop)
-    decoded_drop = Dropout(0.3, name='decoded_drop')(decoded)
-    
-    output = Dense(2, activation='sigmoid')(decoded_drop)
+    output = Dense(2, activation='sigmoid')(decoded_drop2)
     model = Model(input=[main_input], output=output)
     model.layers[1].trainable = TRAINABLE_EMBEDDINGS
-    model.compile(loss=w_binary_crossentropy, optimizer='rmsprop', metrics=['accuracy', 'recall'])
-    #model.compile(loss=w_binary_crossentropy, optimizer='adadelta', metrics=['accuracy', 'recall'])
+    #model.compile(loss=w_binary_crossentropy, optimizer='rmsprop', metrics=['accuracy', 'recall'])
+    model.compile(loss=w_binary_crossentropy, optimizer='adadelta', metrics=['accuracy', 'recall'])
 
 
     print model.summary(line_length=150, positions=[.46, .65, .77, 1.])
@@ -482,7 +453,7 @@ if __name__ == "__main__":
     if LOAD_SAVED_MODEL_AND_CONTINUE_TRAIN:
         model = load_saved_model()
     else:
-        model = baseline_CNN(-1, EMBEDDING_DIM, embedding_W,  len(dictionary_object.word2id_dic))
+        model = baseline_stacked_LSTM(-1, EMBEDDING_DIM, embedding_W,  len(dictionary_object.word2id_dic))
         ####model = lstm_model(-1, EMBEDDING_DIM, embedding_W, None)
 
     #pdb.set_trace()
