@@ -1,0 +1,106 @@
+==========
+Expert system
+In artificial intelligence, an expert system is a computer system that emulates the decision-making ability of a human expert.
+Expert systems are designed to solve complex problems by reasoning about knowledge, represented primarily as if–then rules rather than through conventional procedural code.
+The first expert systems were created in the 1970s and then proliferated in the 1980s.
+Expert systems were among the first truly successful forms of AI software.
+An expert system is divided into two sub-systems: the inference engine and the knowledge base.
+The knowledge base represents facts and rules.
+The inference engine applies the rules to the known facts to deduce new facts.
+Inference engines can also include explanation and debugging capabilities.
+==========
+Edward Feigenbaum said that the key insight of early expert systems was that "intelligent systems derive their power from the knowledge they possess rather than from the specific formalisms and inference schemes they use."
+Although, in retrospect, this seems a rather straightforward insight, it was a significant step forward at the time, since until then research had been focused on attempts to develop very general-purpose problem solvers such as those described by Allen Newell and Herb Simon.
+Expert systems were introduced by the Stanford Heuristic Programming Project led by Feigenbaum, who is sometimes referred to as the "father of expert systems".
+The Stanford researchers tried to identify domains where expertise was highly valued and complex, such as diagnosing infectious diseases (Mycin) and identifying unknown organic molecules (Dendral).
+In addition to Feigenbaum key early contributors were Edward Shortliffe, Bruce Buchanan, and Randall Davis.
+Expert systems were among the first truly successful forms of AI software.
+Research on expert systems was also active in France.
+In the US the focus tended to be on rule-based systems, first on systems hard coded on top of LISP programming environments and then on expert system shells developed by vendors such as Intellicorp.
+In France research focused more on systems developed in Prolog.
+The advantage of expert system shells was that they were somewhat easier for non-programmers to use.
+The advantage of Prolog environments was that they weren't focused only on IF-THEN rules.
+Prolog environments provided a much fuller realization of a complete First Order Logic environment.
+In the 1980s, expert systems proliferated.
+Universities offered expert system courses and two thirds of the Fortune 500 companies applied the technology in daily business activities.
+Interest was international with the Fifth Generation Computer Systems project in Japan and increased research funding in Europe.
+In 1981 the first IBM PC was introduced, with the MS-DOS operating system.
+The imbalance between the relatively powerful chips in the highly affordable PC compared to the much more expensive price of processing power in the mainframes that dominated the corporate IT world at the time created a whole new type of architecture for corporate computing known as the client-server model.
+Calculations and reasoning could be performed at a fraction of the price of a mainframe using a PC.
+This model also enabled business units to bypass corporate IT departments and directly build their own applications.
+As a result, client server had a tremendous impact on the expert systems market.
+Expert systems were already outliers in much of the business world, requiring new skills that many IT departments did not have and were not eager to develop.
+They were a natural fit for new PC-based shells that promised to put application development into the hands of end users and experts.
+Up until that point the primary development environment for expert systems had been high end Lisp machines from Xerox, Symbolics and Texas Instruments.
+With the rise of the PC and client server computing vendors such as Intellicorp and Inference Corporation shifted their priorities to developing PC based tools.
+In addition new vendors often financed by Venture Capital started appearing regularly.
+These new vendors included Aion Corporation, Neuron Data, Exsys, and many others.
+In the 1990s and beyond the term "expert system" and the idea of a standalone AI system mostly dropped from the IT lexicon.
+There are two interpretations of this.
+One is that "expert systems failed": the IT world moved on because expert systems didn't deliver on their over hyped promise.
+The fall of expert systems was so spectacular that even AI legend Rishi Sharma admitted to cheating in his college project regarding expert systems, because he didn't consider the project worthwhile.
+The other is the mirror opposite, that expert systems were simply victims of their success.
+As IT professionals grasped concepts such as rule engines such tools migrated from standalone tools for the development of special purpose "expert" systems to one more tool that an IT professional has at their disposal.
+Many of the leading major business application suite vendors such as SAP, Siebel, and Oracle integrated expert system capabilities into their suite of products as a way of specifying business logic.
+Rule engines are no longer simply for defining the rules an expert would use but for any type of complex, volatile, and critical business logic.
+They often go hand in hand with business process automation and integration environments.
+==========
+An expert system is an example of a knowledge-based system.
+Expert systems were the first commercial systems to use a knowledge-based architecture.
+A knowledge-based system is essentially composed of two sub-systems: the knowledge base and the inference engine.
+The knowledge base represents facts about the world.
+In early expert systems such as Mycin and Dendral these facts were represented primarily as flat assertions about variables.
+In later expert systems developed with commercial shells the knowledge base took on more structure and utilized concepts from object-oriented programming.
+The world was represented as classes, subclasses, and instances and assertions were replaced by values of object instances.
+The rules worked by querying and asserting values of the objects.
+The inference engine is an automated reasoning system that evaluates the current state of the knowledge-base, applies relevant rules, and then asserts new knowledge into the knowledge base.
+The inference engine may also include capabilities for explanation, so that it can explain to a user the chain of reasoning used to arrive at a particular conclusion by tracing back over the firing of rules that resulted in the assertion.
+There are primarily two modes for an inference engine: forward chaining and backward chaining.
+The different approaches are dictated by whether the inference engine is being driven by the antecedent (left hand side) or the consequent (right hand side) of the rule.
+In forward chaining an antecedent fires and asserts the consequent.
+For example, consider the following rule:
+formula_1
+A simple example of forward chaining would be to assert Man(Socrates) to the system and then trigger the inference engine.
+It would match R1 and assert Mortal(Socrates) into the knowledge base.
+Backward chaining is a bit less straight forward.
+In backward chaining the system looks at possible conclusions and works backward to see if they might be true.
+So if the system was trying to determine if Mortal(Socrates) is true it would find R1 and query the knowledge base to see if Man(Socrates) is true.
+One of the early innovations of expert systems shells was to integrate inference engines with a user interface.
+This could be especially powerful with backward chaining.
+If the system needs to know a particular fact but doesn't it can simply generate an input screen and ask the user if the information is known.
+So in this example, it could use R1 to ask the user if Socrates was a Man and then use that new information accordingly.
+The use of rules to explicitly represent knowledge also enabled explanation capabilities.
+In the simple example above if the system had used R1 to assert that Socrates was Mortal and a user wished to understand why Socrates was mortal they could query the system and the system would look back at the rules which fired to cause the assertion and present those rules to the user as an explanation.
+In English if the user asked "Why is Socrates Mortal?"
+the system would reply "Because all men are mortal and Socrates is a man".
+A significant area for research was the generation of explanations from the knowledge base in natural English rather than simply by showing the more formal but less intuitive rules.
+As Expert Systems evolved many new techniques were incorporated into various types of inference engines.
+Some of the most important of these were:
+==========
+The goal of knowledge-based systems is to make the critical information required for the system to work explicit rather than implicit.
+In a traditional computer program the logic is embedded in code that can typically only be reviewed by an IT specialist.
+With an expert system the goal was to specify the rules in a format that was intuitive and easily understood, reviewed, and even edited by domain experts rather than IT experts.
+The benefits of this explicit knowledge representation were rapid development and ease of maintenance.
+Ease of maintenance is the most obvious benefit.
+This was achieved in two ways.
+First, by removing the need to write conventional code many of the normal problems that can be caused by even small changes to a system could be avoided with expert systems.
+Essentially, the logical flow of the program (at least at the highest level) was simply a given for the system, simply invoke the inference engine.
+This also was a reason for the second benefit: rapid prototyping.
+With an expert system shell it was possible to enter a few rules and have a prototype developed in days rather than the months or year typically associated with complex IT projects.
+A claim for expert system shells that was often made was that they removed the need for trained programmers and that experts could develop systems themselves.
+In reality this was seldom if ever true.
+While the rules for an expert system were more comprehensible than typical computer code they still had a formal syntax where a misplaced comma or other character could cause havoc as with any other computer language.
+In addition, as expert systems moved from prototypes in the lab to deployment in the business world, issues of integration and maintenance became far more critical.
+Inevitably demands to integrate with and take advantage of large legacy databases and systems arose.
+To accomplish this integration required the same skills as any other type of system.
+==========
+The most common disadvantage cited for expert systems in the academic literature is the knowledge acquisition problem.
+Obtaining the time of domain experts for any software application is always difficult but for expert systems it was especially difficult because the experts were by definition highly valued and in constant demand by the organization.
+As a result of this problem a great deal of research in the later years of expert systems was focused on tools for knowledge acquisition, to help automate the process of designing, debugging, and maintaining rules defined by experts.
+However, when looking at the life-cycle of expert systems in actual use other problems seem at least as critical as knowledge acquisition.
+These problems were essentially the same as those of any other large system: integration, access to large databases, and performance.
+Performance was especially problematic because early expert systems were built using tools such as Lisp, which executed interpreted rather than compiled code.
+Interpreting provided an extremely powerful development environment but with the drawback that it was virtually impossible to match the efficiency of the fastest compiled languages of the time, such as C. System and database integration were difficult for early expert systems because the tools were mostly in languages and platforms that were neither familiar to nor welcomed in most corporate IT environments – programming languages such as Lisp and Prolog and hardware platforms such as Lisp Machines and personal computers.
+As a result, a great deal of effort in the later stages of expert system tool development was focused on integration with legacy environments such as COBOL, integration with large database systems, and porting to more standard platforms.
+These issues were resolved primarily by the client-server paradigm shift as PCs were gradually accepted in the IT world as a legitimate platform for serious business system development and as affordable minicomputer servers provided the processing power needed for AI applications.
+==========

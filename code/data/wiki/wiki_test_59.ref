@@ -1,0 +1,99 @@
+==========
+Magnetorotational instability
+The magnetorotational instability or MRI is a fluid instability that causes an accretion disk orbiting a massive central object to become turbulent.
+It arises when the angular velocity of a conducting fluid in a magnetic field decreases as the distance from the rotation center increases.
+It is also known as the Velikhov-Chandrasekhar instability or Balbus-Hawley instability in the literature, not to be confused with the electrothermal Velikhov instability.
+The MRI is of particular relevance in astrophysics where it is an important part of the dynamics in accretion disks.
+Gases or liquids containing mobile electrical charges are subject to the influence of a magnetic field.
+In addition to hydrodynamical forces such as pressure and gravity, an element of magnetized fluid also feels the Lorentz force formula_1 where formula_2 is the current density and formula_3 is the magnetic field vector.
+If the fluid is in a state of differential rotation about a fixed origin, this Lorentz force can be surprisingly disruptive, even if the magnetic field is very weak.
+In particular, if the angular velocity of rotation formula_4 decreases with radial distance formula_5 the motion is unstable: a fluid element undergoing a small displacement from circular motion experiences a destabilizing force that increases at a rate which is itself proportional to the displacement.
+This process is known as the "Magnetorotational Instability", or "MRI".
+In astrophysical settings, differentially rotating systems are very common and magnetic fields are ubiquitous.
+In particular, thin disks of gas are often found around forming stars or in binary star systems, where they are known as accretion disks.
+Accretion disks are also commonly present in the centre of galaxies, and in some cases can be extremely luminous: quasars, for example, are thought to originate from a gaseous disk surrounding a very massive black hole.
+Our modern understanding of the MRI arose from attempts to understand the behavior of accretion disks in the presence of magnetic fields; it is now understood that the MRI is likely to occur in a very wide variety of different systems.
+==========
+The MRI was first noticed in a non-astrophysical context by Evgeny Velikhov in 1959 when considering the stability of Couette flow of an ideal hydromagnetic fluid.
+His result was later generalized by S. Chandrasekhar in 1960.
+This mechanism was proposed by Acheson & Hide (1973) to perhaps play a role in the context of the Earth's geodynamo problem.
+Although there was some follow-up work in later decades (Fricke, 1969; Acheson and Hide 1972; Acheson and Gibbons 1978), the generality and power of the instability were not fully appreciated until 1991, when Balbus & Hawley gave a relatively simple elucidation and physical explanation of this important process.
+<h2>What causes the MRI?</h2>
+In a magnetized, perfectly conducting fluid, the magnetic forces behave in some very important respects as though the elements of fluid were connected with elastic bands: trying to displace such an element perpendicular to a magnetic line of force causes an attractive force proportional to the displacement, like a spring under tension.
+Normally, such a force is restoring, a strongly stabilizing influence that would allow a type of magnetic wave to propagate.
+If the fluid medium is not stationary but rotating, however, attractive forces can actually be destabilizing.
+The MRI is a consequence of this surprising behavior.
+Consider, for example, two masses, m ("inner") and m ("outer") connected by a spring under tension, both masses in orbit abound a central body, M. In such a system, the angular velocity of circular orbits near the center is greater than the angular velocity of orbits farther from the center, but the angular momentum of the inner orbits is smaller than that of the outer orbits.
+If m is allowed to orbit a little bit closer to the center than m, it will have a slightly higher angular velocity.
+The connecting spring will pull back on m, and drag m forward.
+This means that m experiences a retarding torque, loses angular momentum, and must fall inward to an orbit of smaller radius, corresponding to a smaller angular momentum.
+m, on the other hand, experiences a positive torque, acquires more angular momentum, and moves outward to a higher orbit.
+The spring stretches yet more, the torques become yet larger, and the motion is unstable!
+Because magnetic forces act like a spring under tension connecting fluid elements, the behavior of a magnetized fluid is almost exactly analogous to this simple mechanical system.
+This is the essence of the MRI .
+==========
+To see this unstable behavior more quantitatively, consider the equations of motion for a fluid element mass in circular motion with an angular velocity formula_6 In general formula_4 will be a function of the distance from the rotation axis formula_5 and we assume that the orbital radius is formula_9 The centripetal force required to keep the mass in orbit is formula_10 the minus sign indicates a direction toward the center.
+If this force is gravity from a point mass at the center, then the centripetal acceleration is simply formula_11 where formula_12 is the gravitational constant and formula_13 is the central mass.
+Let us now consider small departures from the circular motion of the orbiting mass element caused by some perturbing force.
+We transform variables into a rotating frame moving with the orbiting mass element at angular velocity formula_14 with origin located at the unperturbed, orbiting location of the mass element.
+As usual when working in a rotating frame, we need to add to the equations of motion a Coriolis force formula_15 plus a centrifugal force formula_16 The velocity formula_17 is the velocity as measured in the rotating frame.
+Furthermore, we restrict our attention to a small neighborhood near formula_18 say formula_19 with formula_20 much smaller than formula_21 Then the sum of the centrifugal and centripetal forces is
+to linear order in formula_22 With our formula_20 axis pointing radial outward from the unperturbed location of the fluid element and our formula_24 axis pointing in the direction of increasing azimuthal angle (the direction of the unperturbed orbit), the formula_20 and formula_24 equations of motion for a small departure from a circular orbit formula_27 are:
+where formula_28 and formula_29 are the forces per unit mass in the formula_20 and formula_24 directions, and a dot indicates a time derivative (i.e., formula_32 is the formula_20 velocity, formula_34 is the formula_20 acceleration, etc.).
+Provided that formula_28 and formula_29 are either 0 or linear in x and y, this is a system of coupled second-order linear differential equations that can be solved analytically.
+In the absence of external forces, formula_38 and formula_39, the equations of motion have solutions with the time dependence formula_40 where the angular frequency formula_41 satisfies the equation
+where formula_42 is known as the epicyclic frequency.
+In our solar system, for example, deviations from a sun-centered circular orbit that are familiar ellipses when viewed by an external viewer at rest, appear instead as small radial and azimuthal oscillations of the orbiting element when viewed by an observer moving with the undisturbed circular motion.
+These oscillations trace out a small retrograde ellipse (i.e.
+rotating in the opposite sense of the large circular orbit), centered on the undisturbed orbital location of the mass element.
+The epicyclic frequency may equivalently be written formula_43 which shows that it is proportional to the radial derivative of the angular momentum per unit mass, or specific angular momentum.
+The specific angular momentum must increase outward if stable epicyclic oscillations are to exist, otherwise displacements would grow exponentially, corresponding to instability.
+This is a very general result known as the "Rayleigh criterion" (Chandrasekhar 1961) for stability.
+For orbits around a point mass, the specific angular momentum is proportional to formula_44 so the Rayleigh criterion is well satisfied.
+Consider next the solutions to the equations of motion if the mass element is subjected to an external restoring force, formula_45 formula_46 where formula_47 is an arbitrary constant (the "spring constant").
+If we now seek solutions for the modal displacements in formula_20 and formula_24 with time dependence formula_40 we find a much more complex equation for formula_51
+Even though the spring exerts an attractive force, it may destabilize.
+For example, if the spring constant formula_47 is sufficiently weak, the dominant balance will be between the final two terms on the left side of the equation.
+Then, a decreasing outward angular velocity profile will produce negative values for formula_53 and both positive and negative imaginary values for formula_54 The negative imaginary root results not in oscillations, but in exponential growth of very small displacements.
+A weak spring therefore causes the type of instability described qualitatively at the end of the previous section.
+A "strong" spring on the other hand, will produce oscillations, as one intuitively expects.
+==========
+To understand the how the MRI works, we must first understand the conditions inside a perfectly conducting fluid in motion.
+This is often a good approximation to astrophysical gases.
+In the presence of a magnetic field formula_55 a moving conductor responds by trying to eliminate the Lorentz force on the free charges.
+The magnetic force acts in such a way as to locally rearrange these charges to produce an internal electric field of formula_56 In this way, the direct Lorentz force on the charges formula_57 vanishes.
+(Alternatively, the electric field in the local rest frame of the moving charges vanishes.)
+This induced electric field can now itself induce further changes in the magnetic field formula_3 according to Faraday's law,
+Another way to write this equation is that if in time formula_59 the fluid makes a displacement formula_60 then the magnetic field changes by
+The equation of a magnetic field in a perfect conductor in motion has a special property: the combination of Faraday induction and zero Lorentz force makes the field lines behave as though they were painted, or "frozen," into the fluid.
+In particular, if formula_3 is initially nearly constant and formula_62 is a divergence-free displacement, then our equation reduces to
+because of the vector calculus identity formula_63
+Out of these 4 terms, formula_64 is one of Maxwell's equations.
+By the divergence-free assumption, formula_65.
+formula_66 because B is assumed to be nearly constant.
+Equation shows that formula_3 changes only when there is a shearing displacement along the field line.
+To understand the MRI, it is sufficient to consider the case in which formula_3 is uniform in vertical formula_69 direction, and formula_62 varies as formula_71 Then
+where it is understood that the real part of this equation expresses its physical content.
+(If formula_72 is proportional to formula_73 for example, then formula_74 is proportional to formula_75)
+A magnetic field exerts a force per unit volume on an electrically neutral, conducting fluid equal to formula_76 Ampere's circuital law gives formula_77 because Maxwell's correction is neglected in the MHD approximation.
+The force per unit volume becomes
+where we have used the same vector calculus identity.
+This equation is fully general, and makes no assumptions about the strength or direction of the magnetic field.
+The first term on the right is analogous to a pressure gradient.
+In our problem it may be neglected because it exerts no force in the plane of the disk, perpendicular to formula_78 The second term acts like a magnetic tension force, analogous to a taut string.
+For a small disturbance formula_79 it exerts an acceleration given by force divided by mass, or equivalently, force per unit volume divided by mass per unit volume:
+Thus, a magnetic tension force gives rise to a return force which is directly proportional to the displacement.
+This means that the oscillation frequency formula_41 for small displacements in the plane of rotation of a disk with a uniform magnetic field in the vertical direction satisfies an equation ("dispersion relation") exactly analogous to equation , with the "spring constant" formula_81
+As before, if formula_82 there is an exponentially growing root of this equation for wavenumbers formula_83 satisfying formula_84
+This corresponds to the MRI.
+Notice that the magnetic field appears in equation only as the product formula_85 Thus, even if formula_86 is very small, for very large wavenumbers formula_83 this magnetic tension can be important.
+This is why the MRI is so sensitive to even very weak magnetic fields: their effect is amplified by multiplication by formula_88 Moreover, it can be shown that MRI is present regardless of the magnetic field geometry, as long as the field is not too strong.
+In astrophysics, one is generally interested in the case for which the disk is supported by rotation against the gravitational attraction of a central mass.
+A balance between the Newtonian gravitational force and the radial centripetal force immediately gives
+where formula_12 is the Newtonian gravitational constant, formula_13 is the central mass, and formula_91 is radial location in the disk.
+Since formula_92 this so-called "Keplerian disk" is unstable to the MRI .
+Without a weak magnetic field, the flow would be stable.
+For a Keplerian disk, the maximum growth rate is formula_93 which occurs at a wavenumber satisfying formula_94
+formula_95 is very rapid, corresponding to an amplification factor of more than 100 per rotation period.
+The nonlinear development of the MRI into fully developed turbulence may be followed via large scale numerical computation.
+==========
